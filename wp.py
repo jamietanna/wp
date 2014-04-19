@@ -104,16 +104,19 @@ def main():
     print 'Argument List:', str(sys.argv)
 
     if len(sys.argv) > 1:
-        if os.path.isdir(config.WP_DIRECTORY):
-            if not os.path.exists(config.WP_CONFIG_FILE):
-                setup()
-        else:
-            os.makedirs(config.WP_DIRECTORY)
-            setup()
         
         cmd = sys.argv[1].lower()
         if cmd == "setup":
             setup()
+        else:
+            if os.path.isdir(config.WP_DIRECTORY):
+                if not os.path.exists(config.WP_CONFIG_FILE):
+                    setup()
+            else:
+                os.makedirs(config.WP_DIRECTORY)
+                setup()
+            # do rest of 'switch' statement
+            
     else:
         usage()
 
