@@ -64,12 +64,20 @@ def setup():
 def main():
     print 'Number of arguments:', len(sys.argv), 'arguments.'
     print 'Argument List:', str(sys.argv)
-    if os.path.isdir(config.WP_DIRECTORY):
-        if not os.path.exists(config.WP_CONFIG_FILE):
+
+    if len(sys.argv) > 1:
+        if os.path.isdir(config.WP_DIRECTORY):
+            if not os.path.exists(config.WP_CONFIG_FILE):
+                setup()
+        else:
+            os.makedirs(config.WP_DIRECTORY)
             setup()
-    else:
-        os.makedirs(config.WP_DIRECTORY)
-        setup()
+        
+        cmd = sys.argv[1].lower()
+        if cmd == "setup":
+            setup()
+
+
 
 if __name__ == "__main__":
     main()
