@@ -132,9 +132,9 @@ function change {
   #:: Set the background
   if [ $? ]; then
     gsettings set org.gnome.desktop.background picture-uri "file://$background"
-  else
-    feh --bg-fill $background
   fi
+
+  feh --bg-fill $background
 
   #:: Record the current background
   ln -sf $background  $WALLPAPER_DIR/.current

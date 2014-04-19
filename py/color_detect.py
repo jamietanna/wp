@@ -8,7 +8,7 @@ if len(sys.argv) < 2:
   sys.exit()
 
 
-print sys.argv[1]
+# print sys.argv[1]
 
 WALLPAPER  = sys.argv[1]
 filename   = WALLPAPER.split('/').pop()

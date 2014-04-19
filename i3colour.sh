@@ -37,8 +37,9 @@ sed -r -e "s/(inactive_workspace +)(#[^ ]+) (#[^ ]+) (#[^ ]+)/\1$_C6 $_C2 $_C10/
 sed -r -e "s/(active_workspace +)(#[^ ]+) (#[^ ]+) (#[^ ]+)/\1$_C3 $_C4 $_C11/g" |
 sed -r -e "s/(urgent_workspace +)(#[^ ]+) (#[^ ]+) (#[^ ]+)/\1\2 \3 \4/g" |
 sed -r -e "s/(client.urgent +)(#[^ ]+) (#[^ ]+) (#[^ ]+)/\1$_C5 $_C7 $_C13/g" |
-sed -r -e "s/(background +)(#[^ ]+)/\1$_C8/g" |
-sed -r -e "s/(separator +)(#[^ ]+)/\1$_C12/g" 
+sed -r -e "s/(background +)(#[^ ]+)/\1$_C11/g" |
+sed -r -e "s/(separator +)(#[^ ]+)/\1$_C12/g" |
+sed -r -e "s/(statusline +)(#[^ ]+)/\1$_C8/g" 
 
 # background #002b36
 
