@@ -5,6 +5,8 @@ import os
 
 import ConfigParser
 
+import colour
+
 class config:
     class wm:
         I3    = 1
@@ -99,6 +101,25 @@ def usage():
                 setup [WM] [BGM]        Run setup, with optional WindowManager and BackgroundManager
     """.format(sys.argv[0])
 
+def addAFile(path):
+    print "ADDING " + path
+    # print colour.colourz(path)
+    print colour.getColours(path)
+
+def add():
+    files = []
+
+    for idx, f in enumerate(sys.argv):
+        if idx > 1:
+            # print str(idx) + " " + f
+            addAFile(f)
+
+
+
+
+    pass
+
+
 def main():
     print 'Number of arguments:', len(sys.argv), 'arguments.'
     print 'Argument List:', str(sys.argv)
@@ -116,6 +137,9 @@ def main():
                 os.makedirs(config.WP_DIRECTORY)
                 setup()
             # do rest of 'switch' statement
+
+            if cmd == "add":
+                add()
             
     else:
         usage()
