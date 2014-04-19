@@ -7,19 +7,17 @@ import ConfigParser
 
 import colour
 
+_WM = ""
+_BG = ""
+
+
+
 class config:
-    class wm:
-        I3    = 1
-        OTHER = 2
-    class bg:
-        GNOME = 1
-        FEH   = 2
-    WM = ["I3",    "OTHER"]
+    WM = ["I3",    "X",  "OTHER"]
     BG = ["GNOME", "FEH"]
     WP_DIRECTORY = os.path.expanduser('~') + "/.wp"
     WP_CONFIG_FILE = WP_DIRECTORY + "/.config"
     INDENT = ":: "
-
 
 def indent(toPrint, colour):
     print colour + config.INDENT + str(toPrint) + "\033[0m"
@@ -48,6 +46,15 @@ def enumerateChoices(var):
             error("Please enter a valid option. ")
 
     return idxi
+
+def populateSettings():
+    config_file = ConfigParser.ConfigParser()
+    config_file.read(config.WP_CONFIG_FILE)
+    global _WM, _BG
+
+    _WM = config_file.get("wp", "windowmanager")
+    _BG = config_file.get("wp", "backgroundmanager")
+
 
 
 def setup():
@@ -106,18 +113,14 @@ def addAFile(path):
     # print colour.colourz(path)
     print colour.getColours(path)
 
-def add():
-    files = []
+    print ":::: WM = " + _WM
+    print ":::: BG = " + _BG
 
+
+def add():
     for idx, f in enumerate(sys.argv):
         if idx > 1:
-            # print str(idx) + " " + f
             addAFile(f)
-
-
-
-
-    pass
 
 
 def main():
@@ -137,6 +140,8 @@ def main():
                 os.makedirs(config.WP_DIRECTORY)
                 setup()
             # do rest of 'switch' statement
+
+            populateSettings()
 
             if cmd == "add":
                 add()
