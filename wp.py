@@ -111,10 +111,23 @@ def usage():
 def addAFile(path):
     print "ADDING " + path
     # print colour.colourz(path)
-    print colour.getColours(path)
+    colours = colour.getColours(path)
 
     print ":::: WM = " + _WM
     print ":::: BG = " + _BG
+
+    temp   = ""
+    shcols = ""
+
+    for idx, c in enumerate(colours):
+        if _WM == "I3":
+            pass
+        elif _WM == "X":
+            temp += """*color{}: {}\n""".format(idx, c)
+        elif _WM == "OTHER":
+            pass
+        shcols += """export COLOR{}="{}"\n""".format(i, c)
+    print "FINAL: \n\033[93m" + temp + "\033[0m"
 
 
 def add():

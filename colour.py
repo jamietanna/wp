@@ -34,6 +34,9 @@ def to_hsv(c):
     return h, s, v
 
 def getColours(path):
+
+    ret = []
+
     colours = colorz(path, 16)
     colours.sort(key=lambda  x:darkness(x), reverse=True)
     for i, c in enumerate(colours):
@@ -46,5 +49,6 @@ def getColours(path):
         else:
             c = normalize(c, minv=200, maxv=256)
         c = normalize(c, minv=32, maxv=224)
+        ret.append(c)
 
-    return colours
+    return ret
