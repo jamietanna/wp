@@ -16,14 +16,36 @@ class config:
     BG = ["GNOME", "FEH"]
     WP_DIRECTORY = os.path.expanduser('~') + "/.wp"
     WP_CONFIG_FILE = WP_DIRECTORY + "/.config"
+    INDENT = ":: "
 
-def indent(strToPrint):
-    print "\033[91m:: " + strToPrint + "\033[0m"
+
+def indent(toPrint, colour):
+    print colour + config.INDENT + str(toPrint) + "\033[0m"
+
+def output(toPrint):
+    indent(toPrint, "\033[91m")
+
+def error(toPrint):
+    indent("Error: " + str(toPrint), "\033[92m")
 
 def enumerateChoices(var):
-    for ndx, val in enumerate(var):
-        indent( `ndx` + ") " + val)
-    return raw_input("Please enter an option: ")
+    
+    invalidInput = True
+    idxi = -1
+
+    while True:
+        for ndx, val in enumerate(var):
+            output( `ndx` + ") " + val)
+        opt_idx = raw_input("Please enter an option: ")
+        
+        idxi = int(opt_idx)
+
+        if idxi >= 0 and idxi < len(var):
+            break
+        else:
+            error("Please enter a valid option. ")
+
+    return idxi
 
 
 def setup():
@@ -37,28 +59,32 @@ def setup():
     # enumerateChoices(sys.argv)
 
     if len(sys.argv) == 4:
-        WM = sys.argv[2]
-        BG = sys.argv[3]
+        if sys.argv[2].upper() in config.WM:
+            WM = sys.argv[2]
+        else:
+            error("Invalid Window Manager")
+
+        if sys.argv[3].upper() in config.BG:
+            BG = sys.argv[3]
+        else:
+            error("Invalid Background Manager")
+
     else:
         WMi = enumerateChoices(config.WM)
-        WM = config.WM[int(WMi)]
+        WM  = config.WM[int(WMi)]
         BGi = enumerateChoices(config.BG)
-        BG = config.BG[int(BGi)]
+        BG  = config.BG[int(BGi)]
     
     config_file = ConfigParser.RawConfigParser()
     config_file.add_section("wp")
 
-    indent("You chose " + WM)
     config_file.set("wp", "WindowManager", WM)
     
-    indent("You chose " + BG)
     config_file.set("wp", "BackgroundManager", BG)
     
     with open(config.WP_CONFIG_FILE, 'wb') as config_file_:
         config_file.write(config_file_)
 
-
-    indent("Setup!")
     pass
 
 def main():
