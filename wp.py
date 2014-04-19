@@ -31,16 +31,28 @@ def setup():
     # BG=(GNOME|FEH)
     # 
 
+    WM = -1
+    BG = -1
+
+    # enumerateChoices(sys.argv)
+
+    if len(sys.argv) == 4:
+        WM = sys.argv[2]
+        BG = sys.argv[3]
+    else:
+        WMi = enumerateChoices(config.WM)
+        WM = config.WM[int(WMi)]
+        BGi = enumerateChoices(config.BG)
+        BG = config.BG[int(BGi)]
+    
     config_file = ConfigParser.RawConfigParser()
     config_file.add_section("wp")
 
-    WM = enumerateChoices(config.WM)
-    indent("You chose " + config.WM[int(WM)])
-    config_file.set("wp", "WindowManager", config.WM[int(WM)])
+    indent("You chose " + WM)
+    config_file.set("wp", "WindowManager", WM)
     
-    BG = enumerateChoices(config.BG)
-    indent("You chose " + config.BG[int(BG)])
-    config_file.set("wp", "BackgroundManager", config.BG[int(BG)])
+    indent("You chose " + BG)
+    config_file.set("wp", "BackgroundManager", BG)
     
     with open(config.WP_CONFIG_FILE, 'wb') as config_file_:
         config_file.write(config_file_)
