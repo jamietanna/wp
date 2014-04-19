@@ -56,6 +56,8 @@ def setup():
     WM = -1
     BG = -1
 
+    anyErrors = False
+
     # enumerateChoices(sys.argv)
 
     if len(sys.argv) == 4:
@@ -63,11 +65,13 @@ def setup():
             WM = sys.argv[2]
         else:
             error("Invalid Window Manager")
+            anyErrors = True
 
         if sys.argv[3].upper() in config.BG:
             BG = sys.argv[3]
         else:
             error("Invalid Background Manager")
+            anyErrors = True
 
     else:
         WMi = enumerateChoices(config.WM)
@@ -82,10 +86,18 @@ def setup():
     
     config_file.set("wp", "BackgroundManager", BG)
     
-    with open(config.WP_CONFIG_FILE, 'wb') as config_file_:
-        config_file.write(config_file_)
+    if not anyErrors:
+        with open(config.WP_CONFIG_FILE, 'wb') as config_file_:
+            config_file.write(config_file_)
 
     pass
+
+def usage():
+    print """
+    wp
+    Usage: {0}
+                setup [WM] [BGM]        Run setup, with optional WindowManager and BackgroundManager
+    """.format(sys.argv[0])
 
 def main():
     print 'Number of arguments:', len(sys.argv), 'arguments.'
@@ -102,7 +114,8 @@ def main():
         cmd = sys.argv[1].lower()
         if cmd == "setup":
             setup()
-
+    else:
+        usage()
 
 
 if __name__ == "__main__":
