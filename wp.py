@@ -2,19 +2,17 @@
 
 import sys
 import os
-
 import signal
-
 import ConfigParser
-
 import shutil
 
 import colour
+from configwriters import *
+import config
 
 _WM = ""
 _BG = ""
-
-from abc import ABCMeta, abstractmethod
+SHELL_COLOURS = ShellColours()
 
 # SO 1112343
 def signal_handler(signal, frame):
@@ -22,68 +20,6 @@ def signal_handler(signal, frame):
     error("User cancelled operation(s). ")
     error("Now exiting. ")
     sys.exit(1)
-
-class ConfigWriter(object):
-    __metaclass__ = ABCMeta
-    __name = ""
-
-    def __init__(self, name):
-        super(ConfigWriter, self).__init__()
-        __name = name
-
-    def getName(self):
-        return __name
-
-    def writeColoursToFile(self, colours, basePath):
-        coloursForFile = self.formatColoursForFile(colours)
-        with open(self.getPath(basePath), 'w') as f:
-            f.write(coloursForFile)
-        self.afterWrite(basePath)
-
-    @abstractmethod
-    def formatColoursForFile(self, colours):
-        pass
-
-    @abstractmethod
-    def getPath(self, basePath):
-        pass
-
-    # blank function to be overriden if need to have anything that runs after we've written i.e. symlinks
-    def afterWrite(self):
-        pass
-
-class ShellColours(ConfigWriter):
-    def __init__(self):
-        super(ShellColours, self).__init__("Shell Colours")
-
-    def formatColoursForFile(self, colours):
-        shcols = ""
-        for idx, c in enumerate(colours):
-            shcols += """export COLOR{}="{}"\n""".format(idx, c)
-        return shcols
-
-    def getPath(self, basePath):
-        return config.WP_DIRECTORY + "/." + basePath + ".shcolours"
-
-    def afterWrite(self, basePath):
-        # TODO : move to the change functions
-        # SYM_PATH = config.HOME_DIR + "/.colours"
-
-        # if os.path.exists(SYM_PATH):
-        #     os.remove(SYM_PATH)
-
-        # os.symlink(self.getPath(basePath), SYM_PATH)
-
-
-SHELL_COLOURS = ShellColours()
-
-class config:
-    HOME_DIR = os.path.expanduser('~')
-    WM = ["I3",    "X",  "OTHER"]
-    BG = ["GNOME", "FEH"]
-    WP_DIRECTORY = HOME_DIR + "/.wp"
-    WP_CONFIG_FILE = WP_DIRECTORY + "/.config"
-    INDENT = ":: "
 
 def indent(toPrint, colour):
     print colour + config.INDENT + str(toPrint) + "\033[0m"
@@ -120,8 +56,6 @@ def populateSettings():
 
     _WM = config_file.get("wp", "windowmanager")
     _BG = config_file.get("wp", "backgroundmanager")
-
-
 
 def setup():
     # WM=(I3|OTHER)
@@ -207,12 +141,10 @@ def addAFile(oldPath):
 
     print "FINAL: \n\033[93m" + temp + "\033[0m"
 
-
 def add():
     for idx, f in enumerate(sys.argv):
         if idx > 1:
             addAFile(f)
-
 
 def main():
 
