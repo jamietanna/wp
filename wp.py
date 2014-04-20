@@ -38,6 +38,7 @@ class ConfigWriter(object):
         coloursForFile = self.formatColoursForFile(colours)
         with open(self.getPath(basePath), 'w') as f:
             f.write(coloursForFile)
+        self.afterWrite(basePath)
 
     @abstractmethod
     def formatColoursForFile(self, colours):
@@ -45,6 +46,10 @@ class ConfigWriter(object):
 
     @abstractmethod
     def getPath(self, basePath):
+        pass
+
+    # blank function to be overriden if need to have anything that runs after we've written i.e. symlinks
+    def afterWrite(self):
         pass
 
 class ShellColours(ConfigWriter):
@@ -60,12 +65,23 @@ class ShellColours(ConfigWriter):
     def getPath(self, basePath):
         return config.WP_DIRECTORY + "/." + basePath + ".shcolours"
 
+    def afterWrite(self, basePath):
+        # TODO : move to the change functions
+        # SYM_PATH = config.HOME_DIR + "/.colours"
+
+        # if os.path.exists(SYM_PATH):
+        #     os.remove(SYM_PATH)
+
+        # os.symlink(self.getPath(basePath), SYM_PATH)
+
+
 SHELL_COLOURS = ShellColours()
 
 class config:
+    HOME_DIR = os.path.expanduser('~')
     WM = ["I3",    "X",  "OTHER"]
     BG = ["GNOME", "FEH"]
-    WP_DIRECTORY = os.path.expanduser('~') + "/.wp"
+    WP_DIRECTORY = HOME_DIR + "/.wp"
     WP_CONFIG_FILE = WP_DIRECTORY + "/.config"
     INDENT = ":: "
 
