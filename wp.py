@@ -23,38 +23,44 @@ def signal_handler(signal, frame):
     error("Now exiting. ")
     sys.exit(1)
 
-class WindowManager(object):
+class ConfigWriter(object):
     __metaclass__ = ABCMeta
-    """docstring for WindowManager"""
+    __name = ""
+
     def __init__(self, name):
-        super(WindowManager, self).__init__()
+        super(ConfigWriter, self).__init__()
         __name = name
 
     def getName(self):
-        return __name;
+        return __name
+
+    def writeColoursToFile(self, colours, basePath):
+        coloursForFile = self.formatColoursForFile(colours)
+        with open(self.getPath(basePath), 'w') as f:
+            f.write(coloursForFile)
 
     @abstractmethod
-    def coloursToFileContents(self, colours):
+    def formatColoursForFile(self, colours):
         pass
 
     @abstractmethod
-    def getFileExtension(self):
+    def getPath(self, basePath):
         pass
 
-class I3WM(WindowManager):
-    def __init__(self, name):
-        super(I3WM, self).__init__(name)
+class ShellColours(ConfigWriter):
+    def __init__(self):
+        super(ShellColours, self).__init__("Shell Colours")
 
-    @abstractmethod
-    def coloursToFileContents(self, colours):
-        pass
+    def formatColoursForFile(self, colours):
+        shcols = ""
+        for idx, c in enumerate(colours):
+            shcols += """export COLOR{}="{}"\n""".format(idx, c)
+        return shcols
 
-    def getFileExtension(self):
-        return 
+    def getPath(self, basePath):
+        return config.WP_DIRECTORY + "/." + basePath + ".shcolours"
 
-# a = I3WM("dsf")
-
-
+SHELL_COLOURS = ShellColours()
 
 class config:
     WM = ["I3",    "X",  "OTHER"]
@@ -177,8 +183,10 @@ def addAFile(oldPath):
             pass
         shcols += """export COLOR{}="{}"\n""".format(idx, c)
     
-    with open(path_meta + ".shcolours", "w") as f:
-        f.write(shcols)
+    # with open(path_meta + ".shcolours", "w") as f:
+    #     f.write(shcols)
+
+    SHELL_COLOURS.writeColoursToFile(colours, os.path.basename(oldPath))
 
 
     print "FINAL: \n\033[93m" + temp + "\033[0m"
