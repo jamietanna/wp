@@ -10,6 +10,33 @@ import colour
 _WM = ""
 _BG = ""
 
+from abc import ABCMeta, abstractmethod
+
+class WindowManager(object):
+    __metaclass__ = ABCMeta
+    """docstring for WindowManager"""
+    def __init__(self, name):
+        super(WindowManager, self).__init__()
+        __name = name
+
+    def getName(self):
+        return __name;
+
+
+    @abstractmethod
+    def coloursToFileContents(self, colours):
+        pass
+
+    @abstractmethod
+    def getFileExtension(self):
+        pass
+
+class I3WM(WindowManager):
+    def __init__(self, name):
+        super(I3WM, self).__init__(name)
+
+a = I3WM("dsf")
+
 
 
 class config:
