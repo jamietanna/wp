@@ -3,6 +3,8 @@
 import sys
 import os
 
+import signal
+
 import ConfigParser
 
 import shutil
@@ -13,6 +15,13 @@ _WM = ""
 _BG = ""
 
 from abc import ABCMeta, abstractmethod
+
+# SO 1112343
+def signal_handler(signal, frame):
+    print
+    error("User cancelled operation(s). ")
+    error("Now exiting. ")
+    sys.exit(1)
 
 class WindowManager(object):
     __metaclass__ = ABCMeta
@@ -145,7 +154,8 @@ def usage():
     """.format(sys.argv[0])
 
 def addAFile(oldPath):
-    path = config.WP_DIRECTORY + "/" + os.path.basename(oldPath)
+    path      = config.WP_DIRECTORY + "/" + os.path.basename(oldPath)
+    path_meta =  config.WP_DIRECTORY + "/." + os.path.basename(oldPath)
 
     shutil.copy(oldPath, path)
 
@@ -165,7 +175,12 @@ def addAFile(oldPath):
             temp += """*color{}: {}\n""".format(idx, c)
         elif _WM == "OTHER":
             pass
-        shcols += """export COLOR{}="{}"\n""".format(i, c)
+        shcols += """export COLOR{}="{}"\n""".format(idx, c)
+    
+    with open(path_meta + ".shcolours", "w") as f:
+        f.write(shcols)
+
+
     print "FINAL: \n\033[93m" + temp + "\033[0m"
 
 
@@ -176,33 +191,33 @@ def add():
 
 
 def main():
-    try:
-        print 'Number of arguments:', len(sys.argv), 'arguments.'
-        print 'Argument List:', str(sys.argv)
 
-        if len(sys.argv) > 1:
-            
-            cmd = sys.argv[1].lower()
-            if cmd == "setup":
-                setup()
-            else:
-                if os.path.isdir(config.WP_DIRECTORY):
-                    if not os.path.exists(config.WP_CONFIG_FILE):
-                        setup()
-                else:
-                    os.makedirs(config.WP_DIRECTORY)
-                    setup()
-                # do rest of 'switch' statement
+    signal.signal(signal.SIGINT, signal_handler)
 
-                populateSettings()
+    print 'Number of arguments:', len(sys.argv), 'arguments.'
+    print 'Argument List:', str(sys.argv)
 
-                if cmd == "add":
-                    add()
-                
+    if len(sys.argv) > 1:
+        
+        cmd = sys.argv[1].lower()
+        if cmd == "setup":
+            setup()
         else:
-            usage()
-    except:
-        error("User cancelled operation(s)")
+            if os.path.isdir(config.WP_DIRECTORY):
+                if not os.path.exists(config.WP_CONFIG_FILE):
+                    setup()
+            else:
+                os.makedirs(config.WP_DIRECTORY)
+                setup()
+            # do rest of 'switch' statement
+
+            populateSettings()
+
+            if cmd == "add":
+                add()
+            
+    else:
+        usage()
 
 if __name__ == "__main__":
     main()
