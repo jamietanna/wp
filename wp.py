@@ -5,6 +5,8 @@ import os
 
 import ConfigParser
 
+import shutil
+
 import colour
 
 _WM = ""
@@ -22,7 +24,6 @@ class WindowManager(object):
     def getName(self):
         return __name;
 
-
     @abstractmethod
     def coloursToFileContents(self, colours):
         pass
@@ -35,7 +36,14 @@ class I3WM(WindowManager):
     def __init__(self, name):
         super(I3WM, self).__init__(name)
 
-a = I3WM("dsf")
+    @abstractmethod
+    def coloursToFileContents(self, colours):
+        pass
+
+    def getFileExtension(self):
+        return 
+
+# a = I3WM("dsf")
 
 
 
@@ -133,10 +141,14 @@ def usage():
     wp
     Usage: {0}
                 setup [WM] [BGM]        Run setup, with optional WindowManager and BackgroundManager
+                add file1 [file2 ...]   Add file(s), and generate metadata files
     """.format(sys.argv[0])
 
-def addAFile(path):
-    print "ADDING " + path
+def addAFile(oldPath):
+    path = config.WP_DIRECTORY + "/" + os.path.basename(oldPath)
+
+    shutil.copy(oldPath, path)
+
     # print colour.colourz(path)
     colours = colour.getColours(path)
 
@@ -164,31 +176,33 @@ def add():
 
 
 def main():
-    print 'Number of arguments:', len(sys.argv), 'arguments.'
-    print 'Argument List:', str(sys.argv)
+    try:
+        print 'Number of arguments:', len(sys.argv), 'arguments.'
+        print 'Argument List:', str(sys.argv)
 
-    if len(sys.argv) > 1:
-        
-        cmd = sys.argv[1].lower()
-        if cmd == "setup":
-            setup()
-        else:
-            if os.path.isdir(config.WP_DIRECTORY):
-                if not os.path.exists(config.WP_CONFIG_FILE):
-                    setup()
-            else:
-                os.makedirs(config.WP_DIRECTORY)
-                setup()
-            # do rest of 'switch' statement
-
-            populateSettings()
-
-            if cmd == "add":
-                add()
+        if len(sys.argv) > 1:
             
-    else:
-        usage()
+            cmd = sys.argv[1].lower()
+            if cmd == "setup":
+                setup()
+            else:
+                if os.path.isdir(config.WP_DIRECTORY):
+                    if not os.path.exists(config.WP_CONFIG_FILE):
+                        setup()
+                else:
+                    os.makedirs(config.WP_DIRECTORY)
+                    setup()
+                # do rest of 'switch' statement
 
+                populateSettings()
+
+                if cmd == "add":
+                    add()
+                
+        else:
+            usage()
+    except:
+        error("User cancelled operation(s)")
 
 if __name__ == "__main__":
     main()
