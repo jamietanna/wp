@@ -23,7 +23,10 @@ def signal_handler(signal, frame):
     sys.exit(1)
 
 
-def populateFromArray(settingsArray, configFileKey, config_file, error_str):
+def populateFromArray(settingsArray, config_file, configFileKey, error_str):
+    # wrap all the error handling in here, to make it quicker, and safer to 
+    #  add new sections of code in for new settings types
+    
     try:
         configFileValue = config_file.get("wp", configFileKey)
         
@@ -40,13 +43,13 @@ def populateSettings():
     config_file.read(config.WP_CONFIG_FILE)
     global _WM, _BG, _SHELL
 
-    anyNone = False
-
     _WM    = config_file.get("wp", "windowmanager")
     _BG    = config_file.get("wp", "backgroundmanager")
     _SHELL = populateFromArray(config.SHELL, "shell", config_file, "shell")
 
-    if _WM    == None or _BG    == None or _SHELL == None:
+    # if any of our variables are None, we've hit a non-existent value,
+    #  therefore exit. 
+    if any(x == None for x in [_WM, _BG, _SHELL]):
        sys.exit(1)
 
 
