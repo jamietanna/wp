@@ -43,7 +43,7 @@ def enumerate_choices(the_list):
     invalid_input = True
     idxi = -1
 
-    while True:
+    while invalid_input:
         for ndx, val in enumerate(the_list):
             output( str(ndx) + ") " + val)
         opt_idx = raw_input("Please enter an option: ")
