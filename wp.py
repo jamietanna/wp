@@ -133,7 +133,8 @@ def addAFile(oldPath):
     path      = config.WP_DIRECTORY + "/" + os.path.basename(oldPath)
     path_meta = config.WP_DIRECTORY + "/." + os.path.basename(oldPath)
 
-    shutil.copy(oldPath, path)
+    if not os.path.exists(path):
+        shutil.copy(oldPath, path)
 
     # print colour.colourz(path)
     colours = colour.getColours(path)
@@ -180,7 +181,9 @@ def change():
     _BG.changeBackground(os.path.join(config.WP_DIRECTORY, newBG))
 
     __path = _SHELL.getPath(os.path.join(config.WP_DIRECTORY, newBG))
-    print __path
+    if not os.path.exists(__path):
+        output("Note: No metadata found, generating now")
+        addAFile(os.path.join(config.WP_DIRECTORY, newBG))
 
     _SHELL.onBackgroundChange(os.path.join(config.WP_DIRECTORY, newBG))
     output("Changed background to " + newBG)
