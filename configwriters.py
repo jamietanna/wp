@@ -1,22 +1,30 @@
 from abc import ABCMeta, abstractmethod
 import config
 
+from generic import *
+
 class ConfigWriter(object):
     __metaclass__ = ABCMeta
-    __name = ""
+    name = ""
 
     def __init__(self, name):
         super(ConfigWriter, self).__init__()
-        __name = name
+        self.name = name
+        
 
     def getName(self):
-        return __name
+        return name
+
+    # override if you want a shorter name for the command-line
+    def getShortName(self):
+        return name
 
     def writeColoursToFile(self, colours, basePath):
         coloursForFile = self.formatColoursForFile(colours)
         with open(self.getPath(basePath), 'w') as f:
             f.write(coloursForFile)
         self.afterWrite(basePath)
+
 
     @abstractmethod
     def formatColoursForFile(self, colours):
@@ -44,15 +52,8 @@ class ShellColours(ConfigWriter):
     def getPath(self, basePath):
         return config.WP_DIRECTORY + "/." + basePath + ".shcolours"
 
-    def afterWrite(self, basePath):
-        # TODO : move to the change functions
-        # SYM_PATH = config.HOME_DIR + "/.colours"
-
-        # if os.path.exists(SYM_PATH):
-        #     os.remove(SYM_PATH)
-
-        # os.symlink(self.getPath(basePath), SYM_PATH)
-        pass
+    def getShortName(self):
+        return "SH"
 
 class GnomeShellColours(ConfigWriter):
     def __init__(self):
@@ -64,13 +65,6 @@ class GnomeShellColours(ConfigWriter):
     def getPath(self, basePath):
         return config.WP_DIRECTORY + "/." + basePath + ".gshcolours"
 
-    def afterWrite(self, basePath):
-        # TODO : move to the change functions
-        # SYM_PATH = config.HOME_DIR + "/.colours"
-
-        # if os.path.exists(SYM_PATH):
-        #     os.remove(SYM_PATH)
-
-        # os.symlink(self.getPath(basePath), SYM_PATH)
-        pass
+    def getShortName(self):
+        return "GSH"
 

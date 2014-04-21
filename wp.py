@@ -7,14 +7,13 @@ import ConfigParser
 import shutil
 
 import colour
-from configwriters import *
 import config
 
-_WM = ""
-_BG = ""
-SHELL_COLOURS = ShellColours()
-GSHELL_COLOURS = GnomeShellColours()
+from generic import *
 
+_WM    = ""
+_BG    = ""
+_SHELL = ""
 
 # SO 1112343
 def signal_handler(signal, frame):
@@ -23,41 +22,19 @@ def signal_handler(signal, frame):
     error("Now exiting. ")
     sys.exit(1)
 
-def indent(toPrint, colour):
-    print colour + config.INDENT + str(toPrint) + "\033[0m"
-
-def output(toPrint):
-    indent(toPrint, "\033[91m")
-
-def error(toPrint):
-    indent("Error: " + str(toPrint), "\033[92m")
-
-def enumerateChoices(var):
-    
-    invalidInput = True
-    idxi = -1
-
-    while True:
-        for ndx, val in enumerate(var):
-            output( `ndx` + ") " + val)
-        opt_idx = raw_input("Please enter an option: ")
-        
-        idxi = int(opt_idx)
-
-        if idxi >= 0 and idxi < len(var):
-            break
-        else:
-            error("Please enter a valid option. ")
-
-    return idxi
-
 def populateSettings():
     config_file = ConfigParser.ConfigParser()
     config_file.read(config.WP_CONFIG_FILE)
     global _WM, _BG
 
-    _WM = config_file.get("wp", "windowmanager")
-    _BG = config_file.get("wp", "backgroundmanager")
+    _WM    = config_file.get("wp", "windowmanager")
+    _BG    = config_file.get("wp", "backgroundmanager")
+    try:
+        _SHELL = config_file.get("wp", "shell")
+    except:
+        error("No valid shell in config, please run setup again.")
+        sys.exit(1)
+
 
 def setup():
     # WM=(I3|OTHER)
@@ -66,20 +43,31 @@ def setup():
 
     WM = -1
     BG = -1
+    SH = -1
 
     anyErrors = False
 
     # enumerateChoices(sys.argv)
+    
+    _shells = []
+    for s in config.SHELL:
+        _shells.append(s.getShortName())
 
-    if len(sys.argv) == 4:
+    if len(sys.argv) == 5:
         if sys.argv[2].upper() in config.WM:
-            WM = sys.argv[2]
+            WM = sys.argv[2].upper()
         else:
             error("Invalid Window Manager")
             anyErrors = True
 
         if sys.argv[3].upper() in config.BG:
-            BG = sys.argv[3]
+            BG = sys.argv[3].upper()
+        else:
+            error("Invalid Background Manager")
+            anyErrors = True
+
+        if sys.argv[4].upper() in _shells:
+            SH = sys.argv[4].upper()
         else:
             error("Invalid Background Manager")
             anyErrors = True
@@ -89,13 +77,16 @@ def setup():
         WM  = config.WM[int(WMi)]
         BGi = enumerateChoices(config.BG)
         BG  = config.BG[int(BGi)]
-    
+        SHi = enumerateChoices(_shells)
+        SH  = config.SHELL[int(SHi)].getShortName()
+        output(SH)
+
     config_file = ConfigParser.RawConfigParser()
     config_file.add_section("wp")
 
-    config_file.set("wp", "WindowManager", WM)
-    
-    config_file.set("wp", "BackgroundManager", BG)
+    config_file.set("wp", "WindowManager",      WM)
+    config_file.set("wp", "BackgroundManager",  BG)
+    config_file.set("wp", "Shell",              SH)
     
     if not anyErrors:
         with open(config.WP_CONFIG_FILE, 'wb') as config_file_:
@@ -113,7 +104,7 @@ def usage():
 
 def addAFile(oldPath):
     path      = config.WP_DIRECTORY + "/" + os.path.basename(oldPath)
-    path_meta =  config.WP_DIRECTORY + "/." + os.path.basename(oldPath)
+    path_meta = config.WP_DIRECTORY + "/." + os.path.basename(oldPath)
 
     shutil.copy(oldPath, path)
 
@@ -138,9 +129,7 @@ def addAFile(oldPath):
     # with open(path_meta + ".shcolours", "w") as f:
     #     f.write(shcols)
 
-    SHELL_COLOURS.writeColoursToFile(colours,  os.path.basename(oldPath))
-    GSHELL_COLOURS.writeColoursToFile(colours, os.path.basename(oldPath))
-
+    _SHELL.writeColoursToFile(colours, os.path.basename(oldPath))
 
     print "FINAL: \n\033[93m" + temp + "\033[0m"
 
