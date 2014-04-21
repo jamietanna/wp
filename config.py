@@ -8,5 +8,7 @@ BG    = [FehWallpaper(), GnomeWallpaper()]
 # SHELL = ["GNOME"]
 SHELL = [ShellColours(), GnomeShellColours()]
 WP_DIRECTORY = HOME_DIR + "/.wp"
-WP_CONFIG_FILE = WP_DIRECTORY + "/.config"
 ALLOWED_FILE_EXTS = ['.png', '.jpg']
+
+WP_CONFIG_FILE = WP_DIRECTORY + "/.config"
+WP_CONFIG_SECTION = "wp"

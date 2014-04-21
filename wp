@@ -31,7 +31,7 @@ def populateFromArray(settingsArray, config_file, configFileKey, error_str):
     #  add new sections of code in for new settings types
 
     try:
-        configFileValue = config_file.get("wp", configFileKey)
+        configFileValue = config_file.get(WP_CONFIG_SECTION, configFileKey)
 
         for val in settingsArray:
             if configFileValue == val.getShortName():
@@ -48,11 +48,10 @@ def populateSettings():
     config_file.read(config.WP_CONFIG_FILE)
     global _WM, _BG, _SHELL
 
-    _WM    = config_file.get("wp", "windowmanager")
-    _BG    = populateFromArray(config.BG, config_file, "backgroundmanager", "background manager")
+    _WM    = config_file.get  (WP_CONFIG_SECTION, "windowmanager")
 
-    # config_file.get("wp", "backgroundmanager")
-    _SHELL = populateFromArray(config.SHELL, config_file, "shell", "shell")
+    _BG    = populateFromArray(config.BG,   config_file, "backgroundmanager", "background manager")
+    _SHELL = populateFromArray(config.SHELL,config_file, "shell",             "shell")
 
     # if any of our variables are None, we've hit a non-existent value,
     #  therefore exit. 
@@ -61,21 +60,8 @@ def populateSettings():
 
 
 def setup():
-    # WM=(I3|OTHER)
-    # BG=(GNOME|FEH)
-    # 
-
-    WM = -1
-    BG = -1
-    SH = -1
-
     anyErrors = False
 
-    # enumerateChoices(sys.argv)
-    
-    # _shells = []
-    # for s in config.SHELL:
-    #     _shells.append(s.getShortName())
     _bgs    = [bg.getShortName() for bg in config.BG]
     _shells = [s.getShortName()  for s in config.SHELL]
 
@@ -109,11 +95,11 @@ def setup():
         SH  = config.SHELL[int(SHi)].getShortName()
 
     config_file = ConfigParser.RawConfigParser()
-    config_file.add_section("wp")
+    config_file.add_section(WP_CONFIG_SECTION)
 
-    config_file.set("wp", "WindowManager",      WM)
-    config_file.set("wp", "BackgroundManager",  BG)
-    config_file.set("wp", "Shell",              SH)
+    config_file.set(WP_CONFIG_SECTION, "WindowManager",      WM)
+    config_file.set(WP_CONFIG_SECTION, "BackgroundManager",  BG)
+    config_file.set(WP_CONFIG_SECTION, "Shell",              SH)
     
     if not anyErrors:
         with open(config.WP_CONFIG_FILE, 'w') as config_file_:
@@ -128,16 +114,11 @@ def usage():
 # TODO don't bother adding files if they already exist
 def addAFile(oldPath):
     path      = config.WP_DIRECTORY + "/" + os.path.basename(oldPath)
-    path_meta = config.WP_DIRECTORY + "/." + os.path.basename(oldPath)
 
     if not os.path.exists(path):
         shutil.copy(oldPath, path)
 
-    # print colour.colourz(path)
     colours = colour.getColours(path)
-
-    # print ":::: WM = " + _WM
-    # print ":::: BG = " + _BG
 
     temp   = ""
     shcols = ""
@@ -151,8 +132,6 @@ def addAFile(oldPath):
             pass
         shcols += """export COLOR{}="{}"\n""".format(idx, c)
     
-    # with open(path_meta + ".shcolours", "w") as f:
-    #     f.write(shcols)
     _SHELL.writeColoursToFile(colours, os.path.basename(oldPath))
 
 def add(files):
@@ -186,8 +165,8 @@ def main():
 
     signal.signal(signal.SIGINT, signal_handler)
 
-    debug('Number of arguments: '+ str(len(sys.argv)) + ' arguments.')
-    debug('Argument List: ' + str(sys.argv))
+    debug('Number of arguments: {} arguments.'.format(str(len(sys.argv))))
+    debug('Argument List: {}'.format(str(sys.argv)))
 
     if len(sys.argv) > 1:
         
