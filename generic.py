@@ -6,15 +6,14 @@ Functions that don't need to necessarily be left in the main application code,
 
 import config
 
-# Store this here otherwise we get circular references
-INDENT_STR = ":: "
+import subprocess
 
 def indent(to_print, colour_esc_code):
     """
-    Indent a string with INDENT, and colourise it through the given 
+    Indent a string with INDENT_STR, and colourise it through the given 
      colour_esc_code.
     """
-    print colour_esc_code + INDENT_STR + str(to_print) + "\033[0m"
+    print colour_esc_code + config.INDENT_STR + str(to_print) + "\033[0m"
 
 def output(to_print):
     """
@@ -55,3 +54,15 @@ def enumerate_choices(the_list):
         if invalid_input:
             error("Please enter a valid option. ")
     return idxi    
+
+
+def execute(args):
+    """
+    Execute a given command (denoted by args), informing user of an error
+     and if config.IS_DEBUG_MODE, output the error code. 
+    """
+    ret = subprocess.call(args)
+    if not ret == 0:
+        error("Some unknown error occured when executing {}".
+                format(args[0]))
+        debug("Error code {} when calling [{}]".format(ret, " ".join(args)))

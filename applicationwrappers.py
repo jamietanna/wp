@@ -3,87 +3,81 @@ import config
 
 import os
 
-from generic import *
-
-import subprocess
-
+from generic import error
 
 ## <BASE>
 
-class ApplicationWrapper(object):
+class application_wrapper(object):
     __metaclass__ = ABCMeta
     name = ""
 
     def __init__(self, name):
-        super(ApplicationWrapper, self).__init__()
+        super(application_wrapper, self).__init__()
         self.name = name
 
-    def execute(self, args):
-        ret = subprocess.call(args)
-        if not ret == 0:
-            error("Some unknown error occured when executing {}".format(args[0]))
 
-    def getName(self):
+    def get_name(self):
         return self.name
 
     # override if you want a shorter name for the command-line
-    def getShortName(self):
+    def get_short_name(self):
         return self.name
 
-class BackgroundManager(ApplicationWrapper):
+class background_manager(application_wrapper):
     def __init__(self, name):
-        super(BackgroundManager, self).__init__(name)
+        super(background_manager, self).__init__(name)
 
     @abstractmethod
-    def changeBackground(self, path):
+    def change_background(self, path):
         pass
 
-class ConfigWriter(ApplicationWrapper):
+class config_writer(application_wrapper):
 
     def __init__(self, name):
-        super(ConfigWriter, self).__init__(name)
+        super(config_writer, self).__init__(name)
 
-    def writeColoursToFile(self, colours, basePath):
-        coloursForFile = self.formatColoursForFile(colours)
-        with open(self.getPath(basePath), 'w') as f:
-            f.write(coloursForFile)
-        self.afterWrite(basePath)
-
+    def write_colours_to_file(self, colours, base_path):
+        colours_for_file = self.format_colours_for_file(colours)
+        with open(self.get_path(base_path), 'w') as f:
+            f.write(colours_for_file)
+        self.after_write(base_path)
 
     @abstractmethod
-    def formatColoursForFile(self, colours):
+    def format_colours_for_file(self, colours):
         pass
 
     @abstractmethod
-    def getPath(self, basePath):
+    def get_path(self, base_path):
         pass
 
-    # blank function to be overriden if need to have anything that runs after we've written i.e. symlinks
-    def afterWrite(self, basePath):
+    # blank function to be overriden if need to have anything that runs 
+    #  after we've written i.e. symlinks
+    def after_write(self, base_path):
         pass
 
     @abstractmethod
-    def onBackgroundChange(self, basePath):
+    def on_background_change(self, base_path):
         pass
 
 
 ## </BASE>
 
-class FehWallpaper(BackgroundManager):
+class feh_wallpaper(background_manager):
     def __init__(self):
-        super(FehWallpaper, self).__init__("FEH")
+        super(feh_wallpaper, self).__init__("FEH")
 
-    def changeBackground(self, path):
-        self.execute(["feh", "--bg-fill", path])
+    def change_background(self, path):
+        execute(["feh", "--bg-fill", path])
 
-class GnomeWallpaper(BackgroundManager):
+class gnome_wallpaper(background_manager):
     def __init__(self):
-        super(GnomeWallpaper, self).__init__("Gnome Wallpaper Changer")
+        super(gnome_wallpaper, self).__init__("Gnome Wallpaper Changer")
 
-    def changeBackground(self, path):
-        self.execute(["gsettings", "set", "org.gnome.desktop.background", "picture-uri", "'file://" + path + "'"])
+    def change_background(self, path):
+        execute(["gsettings", "set", "org.gnome.desktop.background", 
+                      "picture-uri", "'file://" + path + "'"])
 
-    def getShortName(self):
+    def get_short_name(self):
         return "GNOMEWP"
 
 ## </BG>
@@ -91,34 +85,34 @@ class GnomeWallpaper(BackgroundManager):
 
 ## <WM>
 
-class WindowManager(ConfigWriter):
+class window_manager(config_writer):
     def __init__(self, name):
-        super(WindowManager, self).__init__(name)
+        super(window_manager, self).__init__(name)
 
-    # make this abstract as we don't want the ConfigWriter implementation
+    # make this abstract as we don't want the Config_writer implementation
     #  as it doesn't affect us, and the WM-specific code won't be similar
     @abstractmethod
-    def writeColoursToFile(self, colours):
+    def write_colours_to_file(self, colours):
         pass
 
-class I3WM(WindowManager):
+class i3wm(window_manager):
     def __init__(self):
-        super(I3WM, self).__init__("I3 Window Manager")
+        super(i3wm, self).__init__("I3 Window Manager")
         error("NOTE: I3WM has not been implemented yet. ")
 
-    def formatColoursForFile(self, colours):
+    def format_colours_for_file(self, colours):
         pass
 
-    def writeColoursToFile(self, colours):
+    def write_colours_to_file(self, colours):
         pass
 
-    def getPath(self, basePath):
+    def get_path(self, base_path):
         return config.HOME_DIR + "/.i3/config"
 
-    def getShortName(self):
+    def get_short_name(self):
         return "I3WM"
 
-    def onBackgroundChange(self, basePath):
+    def on_background_change(self, base_path):
         pass
 
 ## </WM>
@@ -127,44 +121,53 @@ class I3WM(WindowManager):
 
 
 # TODO: where is this actually used?
-class ShellColours(ConfigWriter):
+class shell_colours(config_writer):
     def __init__(self):
-        super(ShellColours, self).__init__("Shell Colours")
+        super(shell_colours, self).__init__("Shell Colours")
 
-    def formatColoursForFile(self, colours):
+    def format_colours_for_file(self, colours):
         shcols = ""
         for idx, c in enumerate(colours):
             shcols += """export COLOR{}="{}"\n""".format(idx, c)
         return shcols
 
-    def getPath(self, basePath):
-        return config.WP_DIRECTORY + "/." + basePath + ".shcolours"
+    def get_path(self, base_path):
+        return config.WP_DIRECTORY + "/." + base_path + ".shcolours"
 
-    def getShortName(self):
+    def get_short_name(self):
         return "SH"
 
-    def onBackgroundChange(self, basePath):
+    def on_background_change(self, base_path):
         pass
 
 
-class GnomeShellColours(ConfigWriter):
+class gnome_shell_colours(config_writer):
     def __init__(self):
-        super(GnomeShellColours, self).__init__("Shell Colours (Gnome)")
+        super(gnome_shell_colours, self).__init__("Shell Colours (Gnome)")
 
-    def formatColoursForFile(self, colours):
+    def format_colours_for_file(self, colours):
         return ":".join(colours)
 
-    def getPath(self, basePath):
-        return config.WP_DIRECTORY + "/." + os.path.basename(basePath) + ".gshcolours"
+    def get_path(self, base_path):
+        return config.WP_DIRECTORY + "/." + os.path.basename(base_path) \
+                + ".gshcolours"
 
-    def getShortName(self):
+    def get_short_name(self):
         return "GSH"
 
-    def onBackgroundChange(self, basePath):
-        with open(self.getPath(basePath)) as f:
+    def on_background_change(self, base_path):
+        with open(self.get_path(base_path)) as f:
             colours = f.read()
 
-        self.execute(["gconftool-2", "--set", "/apps/gnome-terminal/profiles/Default/palette", "--type", "string", colours])
+        execute(["gconftool-2", "--set", 
+            "/apps/gnome-terminal/profiles/Default/palette", "--type", 
+            "string", colours])
 
 
 ## </Shells>
+
+
+
+WM    = [i3wm()]
+BG    = [feh_wallpaper(), gnome_wallpaper()]
+SHELL = [shell_colours(), gnome_shell_colours()]
