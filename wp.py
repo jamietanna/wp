@@ -22,25 +22,32 @@ def signal_handler(signal, frame):
     error("Now exiting. ")
     sys.exit(1)
 
+
+def populateFromArray(settingsArray, configFileKey, config_file, error_str):
+    try:
+        configFileValue = config_file.get("wp", configFileKey)
+        
+        for val in settingsArray:
+            if configFileValue == val.getShortName():
+                return val
+    except:
+        error("No valid " + error_str + " in config, please run setup again. ")
+        return None
+
+
 def populateSettings():
     config_file = ConfigParser.ConfigParser()
     config_file.read(config.WP_CONFIG_FILE)
     global _WM, _BG, _SHELL
 
+    anyNone = False
+
     _WM    = config_file.get("wp", "windowmanager")
     _BG    = config_file.get("wp", "backgroundmanager")
-    try:
-        _SHELLstr = config_file.get("wp", "shell")
-        for sh in config.SHELL:
-            if sh.getShortName() == _SHELLstr:
-                _SHELL = sh
-                break
-            else:
-                output(sh.getShortName() + "!= " + _SHELLstr)
+    _SHELL = populateFromArray(config.SHELL, "shell", config_file, "shell")
 
-    except:
-        error("No valid shell in config, please run setup again.")
-        sys.exit(1)
+    if _WM    == None or _BG    == None or _SHELL == None:
+       sys.exit(1)
 
 
 def setup():
