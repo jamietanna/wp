@@ -119,16 +119,11 @@ def setup():
         with open(config.WP_CONFIG_FILE, 'w') as config_file_:
             config_file.write(config_file_)
 
-    pass
-
 def usage():
-    print """
-    wp
-    Usage: {0}
-                setup [WM BGM SHELL]    Run setup, with optional WindowManager, BackgroundManager and Shell
-                add   file1 [file2 ...] Add file(s), and generate metadata files
-    """.format(sys.argv[0])
-
+    output("Usage: {0}".format(sys.argv[0]))
+    output("            setup [WM BGM SHELL]    Run setup, with optional WindowManager, BackgroundManager and Shell")
+    output("            add   file1 [file2 ...] Add file(s), and generate metadata files")
+    
 def addAFile(oldPath):
     path      = config.WP_DIRECTORY + "/" + os.path.basename(oldPath)
     path_meta = config.WP_DIRECTORY + "/." + os.path.basename(oldPath)
@@ -158,25 +153,19 @@ def addAFile(oldPath):
     #     f.write(shcols)
     _SHELL.writeColoursToFile(colours, os.path.basename(oldPath))
 
-    print "FINAL: \n\033[93m" + temp + "\033[0m"
-
-def add():
-    for idx, f in enumerate(sys.argv):
-        if idx > 1:
-            addAFile(f)
+def add(files):
+    for f in files:
+        addAFile(f)
 
 def change():
     onlyfiles =  [ f for f in os.listdir(config.WP_DIRECTORY) if os.path.isfile(os.path.join(config.WP_DIRECTORY,f)) ]
     images = []
-    output("Files:")
     for f in onlyfiles:
         _, fE = os.path.splitext(f)
         if fE in config.ALLOWED_FILE_EXTS:
             images.append(f)
-            output("  " + f)
 
     newBG = random.choice(images)
-    output("NEW :: " + newBG)
 
     _BG.changeBackground(os.path.join(config.WP_DIRECTORY, newBG))
 
@@ -192,8 +181,8 @@ def main():
 
     signal.signal(signal.SIGINT, signal_handler)
 
-    print 'Number of arguments:', len(sys.argv), 'arguments.'
-    print 'Argument List:', str(sys.argv)
+    debug('Number of arguments: '+ str(len(sys.argv)) + 'arguments.')
+    debug('Argument List:' + str(sys.argv))
 
     if len(sys.argv) > 1:
         
@@ -212,7 +201,11 @@ def main():
             populateSettings()
 
             if cmd == "add":
-                add()
+                files = []
+                for idx, f in enumerate(sys.argv):
+                    if idx > 1:
+                        files.append(f)
+                add(files)
             if cmd == "change":
                 change()
             else:

@@ -2,14 +2,17 @@ import config
 
 INDENT = ":: "
 
-def indent(toPrint, colour):
-    print colour + INDENT + str(toPrint) + "\033[0m"
+def indent(toPrint, colourEscCode):
+    print colourEscCode + INDENT + str(toPrint) + "\033[0m"
 
 def output(toPrint):
     indent(toPrint, "\033[91m")
 
 def error(toPrint):
     indent("Error: " + str(toPrint), "\033[92m")
+
+def debug(toPrint):
+    indent("DEBUG: " + str(toPrint), "\033[95m")
 
 def enumerateChoices(var):
     
