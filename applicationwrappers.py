@@ -104,6 +104,7 @@ class WindowManager(ConfigWriter):
 class I3WM(WindowManager):
     def __init__(self):
         super(I3WM, self).__init__("I3 Window Manager")
+        error("NOTE: I3WM has not been implemented yet. ")
 
     def formatColoursForFile(self, colours):
         pass

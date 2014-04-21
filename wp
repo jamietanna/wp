@@ -14,9 +14,13 @@ import random
 
 from generic import *
 
-_WM    = ""
-_BG    = ""
-_SHELL = ""
+class UserConfig:
+    WM    = None
+    BG    = None
+    SHELL = None
+
+
+
 
 # SO 1112343
 def signal_handler(signal, frame):
@@ -46,52 +50,52 @@ def populateFromArray(settingsArray, config_file, configFileKey, error_str):
 def populateSettings():
     config_file = ConfigParser.ConfigParser()
     config_file.read(config.WP_CONFIG_FILE)
-    global _WM, _BG, _SHELL
 
-    _WM    = config_file.get  (config.WP_CONFIG_SECTION, "windowmanager")
-
-    _BG    = populateFromArray(config.BG,   config_file, "backgroundmanager", "background manager")
-    _SHELL = populateFromArray(config.SHELL,config_file, "shell",             "shell")
+    UserConfig.WM    = populateFromArray(config.WM,   config_file, "windowmanager",     "window manager")
+    UserConfig.BG    = populateFromArray(config.BG,   config_file, "backgroundmanager", "background manager")
+    UserConfig.SHELL = populateFromArray(config.SHELL,config_file, "shell",             "shell")
 
     # if any of our variables are None, we've hit a non-existent value,
     #  therefore exit. 
-    if any(x == None for x in [_WM, _BG, _SHELL]):
+    if any(x == None for x in [UserConfig.WM, UserConfig.BG, UserConfig.SHELL]):
        sys.exit(1)
 
 
 def setup():
     anyErrors = False
 
-    _bgs    = [bg.getShortName() for bg in config.BG]
-    _shells = [s.getShortName()  for s in config.SHELL]
+    _BGs    = [bg.getShortName()    for bg in config.BG]
+    _Shells = [s.getShortName()     for s in config.SHELL]
+    _WMs    = [wm.getShortName()    for wm in config.WM]
 
     if len(sys.argv) == 5:
-        if sys.argv[2].upper() in config.WM:
+        # TODO remove this repetition
+        if sys.argv[2].upper() in _WMs:
             WM = sys.argv[2].upper()
         else:
             error("Invalid Window Manager")
             anyErrors = True
 
-        if sys.argv[3].upper() in _bgs:
+        if sys.argv[3].upper() in _BGs:
             BG = sys.argv[3].upper()
         else:
             error("Invalid Background Manager")
             anyErrors = True
 
-        if sys.argv[4].upper() in _shells:
+        if sys.argv[4].upper() in _Shells:
             SH = sys.argv[4].upper()
         else:
-            error("Invalid Background Manager")
+            error("Invalid Shell")
             anyErrors = True
 
     else:
-        WMi = enumerateChoices(config.WM)
-        WM  = config.WM[int(WMi)]
+        WMi = enumerateChoices(_WMs)
+        WM  = config.WM[int(WMi)].getShortName()
 
-        BGi = enumerateChoices(_bgs)
+        BGi = enumerateChoices(_BGs)
         BG  = config.BG[int(BGi)].getShortName()
 
-        SHi = enumerateChoices(_shells)
+        SHi = enumerateChoices(_Shells)
         SH  = config.SHELL[int(SHi)].getShortName()
 
     config_file = ConfigParser.RawConfigParser()
@@ -124,15 +128,15 @@ def addAFile(oldPath):
     shcols = ""
 
     for idx, c in enumerate(colours):
-        if _WM == "I3":
+        if UserConfig.WM == "I3":
             pass
-        elif _WM == "X":
+        elif UserConfig.WM == "X":
             temp += """*color{}: {}\n""".format(idx, c)
-        elif _WM == "OTHER":
+        elif UserConfig.WM == "OTHER":
             pass
         shcols += """export COLOR{}="{}"\n""".format(idx, c)
     
-    _SHELL.writeColoursToFile(colours, os.path.basename(oldPath))
+    UserConfig.SHELL.writeColoursToFile(colours, os.path.basename(oldPath))
 
 def add(files):
     for f in files:
@@ -151,14 +155,14 @@ def change():
     images = imagesFromDirectory(config.WP_DIRECTORY)
     newBG = random.choice(images)
 
-    _BG.changeBackground(os.path.join(config.WP_DIRECTORY, newBG))
+    UserConfig.BG.changeBackground(os.path.join(config.WP_DIRECTORY, newBG))
 
-    __path = _SHELL.getPath(os.path.join(config.WP_DIRECTORY, newBG))
+    __path = UserConfig.SHELL.getPath(os.path.join(config.WP_DIRECTORY, newBG))
     if not os.path.exists(__path):
         output("Note: No metadata found, generating now")
         addAFile(os.path.join(config.WP_DIRECTORY, newBG))
 
-    _SHELL.onBackgroundChange(os.path.join(config.WP_DIRECTORY, newBG))
+    UserConfig.SHELL.onBackgroundChange(os.path.join(config.WP_DIRECTORY, newBG))
     output("Changed background to " + newBG)
 
 def main():

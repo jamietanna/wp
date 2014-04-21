@@ -2,8 +2,7 @@ import os
 from applicationwrappers import *
 
 HOME_DIR = os.path.expanduser('~')
-WM    = ["I3",    "X",  "OTHER"]
-_I3   = I3WM()
+WM    = [I3WM()]
 BG    = [FehWallpaper(), GnomeWallpaper()]
 # SHELL = ["GNOME"]
 SHELL = [ShellColours(), GnomeShellColours()]
