@@ -8,4 +8,4 @@ BG    = ["GNOME", "FEH"]
 SHELL = [ShellColours(), GnomeShellColours()]
 WP_DIRECTORY = HOME_DIR + "/.wp"
 WP_CONFIG_FILE = WP_DIRECTORY + "/.config"
-INDENT = ":: "
+

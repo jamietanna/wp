@@ -5,12 +5,12 @@ from generic import *
 
 import subprocess
 
-class WallpaperChanger(object):
+class BackgroundManager(object):
     __metaclass__ = ABCMeta
     name = ""
 
     def __init__(self, name):
-        super(WallpaperChanger, self).__init__()
+        super(BackgroundManager, self).__init__()
         self.name = name
 
     @abstractmethod
@@ -29,14 +29,14 @@ class WallpaperChanger(object):
         if not ret == 0:
             error("Some unknown error occured when changing background. ")
 
-class FehWallpaper(WallpaperChanger):
+class FehWallpaper(BackgroundManager):
     def __init__(self):
         super(FehWallpaper, self).__init__("FEH")
 
     def changeBackground(self, path):
         self.execute(["feh", "--bg-fill", path])
 
-class GnomeWallpaper(WallpaperChanger):
+class GnomeWallpaper(BackgroundManager):
     def __init__(self):
         super(GnomeWallpaper, self).__init__("Gnome Wallpaper Changer")
 
