@@ -155,7 +155,6 @@ def addAFile(oldPath):
     
     # with open(path_meta + ".shcolours", "w") as f:
     #     f.write(shcols)
-
     _SHELL.writeColoursToFile(colours, os.path.basename(oldPath))
 
     print "FINAL: \n\033[93m" + temp + "\033[0m"
@@ -166,13 +165,12 @@ def add():
             addAFile(f)
 
 def change():
-    
     onlyfiles =  [ f for f in os.listdir(config.WP_DIRECTORY) if os.path.isfile(os.path.join(config.WP_DIRECTORY,f)) ]
     images = []
     output("Files:")
     for f in onlyfiles:
-        fN, fE = os.path.splitext(f)
-        if fE in ['.png', '.jpg']:
+        _, fE = os.path.splitext(f)
+        if fE in config.ALLOWED_FILE_EXTS:
             images.append(f)
             output("  " + f)
 
@@ -180,6 +178,11 @@ def change():
     output("NEW :: " + newBG)
 
     _BG.changeBackground(os.path.join(config.WP_DIRECTORY, newBG))
+
+    __path = _SHELL.getPath(os.path.join(config.WP_DIRECTORY, newBG))
+    print __path
+
+    _SHELL.onBackgroundChange(os.path.join(config.WP_DIRECTORY, newBG))
     output("Changed background to " + newBG)
 
 def main():
