@@ -4,10 +4,10 @@ from applicationwrappers import *
 HOME_DIR = os.path.expanduser('~')
 WM    = [I3WM()]
 BG    = [FehWallpaper(), GnomeWallpaper()]
-# SHELL = ["GNOME"]
 SHELL = [ShellColours(), GnomeShellColours()]
 WP_DIRECTORY = HOME_DIR + "/.wp"
 ALLOWED_FILE_EXTS = ['.png', '.jpg']
-
 WP_CONFIG_FILE = WP_DIRECTORY + "/.config"
 WP_CONFIG_SECTION = "wp"
+IS_DEBUG_MODE = True
+INDENT_STR = ":: "
