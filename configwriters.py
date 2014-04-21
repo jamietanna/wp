@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+import config
 
 class ConfigWriter(object):
     __metaclass__ = ABCMeta
@@ -29,6 +30,7 @@ class ConfigWriter(object):
     def afterWrite(self):
         pass
 
+# TODO: where is this actually used?
 class ShellColours(ConfigWriter):
     def __init__(self):
         super(ShellColours, self).__init__("Shell Colours")
@@ -51,3 +53,24 @@ class ShellColours(ConfigWriter):
 
         # os.symlink(self.getPath(basePath), SYM_PATH)
         pass
+
+class GnomeShellColours(ConfigWriter):
+    def __init__(self):
+        super(GnomeShellColours, self).__init__("Shell Colours (Gnome)")
+
+    def formatColoursForFile(self, colours):
+        return ":".join(colours)
+
+    def getPath(self, basePath):
+        return config.WP_DIRECTORY + "/." + basePath + ".gshcolours"
+
+    def afterWrite(self, basePath):
+        # TODO : move to the change functions
+        # SYM_PATH = config.HOME_DIR + "/.colours"
+
+        # if os.path.exists(SYM_PATH):
+        #     os.remove(SYM_PATH)
+
+        # os.symlink(self.getPath(basePath), SYM_PATH)
+        pass
+

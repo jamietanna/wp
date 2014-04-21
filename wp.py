@@ -13,6 +13,8 @@ import config
 _WM = ""
 _BG = ""
 SHELL_COLOURS = ShellColours()
+GSHELL_COLOURS = GnomeShellColours()
+
 
 # SO 1112343
 def signal_handler(signal, frame):
@@ -136,7 +138,8 @@ def addAFile(oldPath):
     # with open(path_meta + ".shcolours", "w") as f:
     #     f.write(shcols)
 
-    SHELL_COLOURS.writeColoursToFile(colours, os.path.basename(oldPath))
+    SHELL_COLOURS.writeColoursToFile(colours,  os.path.basename(oldPath))
+    GSHELL_COLOURS.writeColoursToFile(colours, os.path.basename(oldPath))
 
 
     print "FINAL: \n\033[93m" + temp + "\033[0m"
