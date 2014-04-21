@@ -25,12 +25,19 @@ def signal_handler(signal, frame):
 def populateSettings():
     config_file = ConfigParser.ConfigParser()
     config_file.read(config.WP_CONFIG_FILE)
-    global _WM, _BG
+    global _WM, _BG, _SHELL
 
     _WM    = config_file.get("wp", "windowmanager")
     _BG    = config_file.get("wp", "backgroundmanager")
     try:
-        _SHELL = config_file.get("wp", "shell")
+        _SHELLstr = config_file.get("wp", "shell")
+        for sh in config.SHELL:
+            if sh.getShortName() == _SHELLstr:
+                _SHELL = sh
+                break
+            else:
+                output(sh.getShortName() + "!= " + _SHELLstr)
+
     except:
         error("No valid shell in config, please run setup again.")
         sys.exit(1)

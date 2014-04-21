@@ -35,7 +35,7 @@ class ConfigWriter(object):
         pass
 
     # blank function to be overriden if need to have anything that runs after we've written i.e. symlinks
-    def afterWrite(self):
+    def afterWrite(self, basePath):
         pass
 
 # TODO: where is this actually used?
