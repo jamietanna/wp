@@ -61,32 +61,26 @@ def populateSettings():
        sys.exit(1)
 
 
+def inList(toCheck, theList, error_str):
+    if toCheck.upper() in theList:
+        return toCheck.upper()
+    else:
+        error(error_str)
+        return None
+
 def setup():
     anyErrors = False
 
     _BGs    = [bg.getShortName()    for bg in config.BG]
-    _Shells = [s.getShortName()     for s in config.SHELL]
+    _SHs    = [s.getShortName()     for s in config.SHELL]
     _WMs    = [wm.getShortName()    for wm in config.WM]
 
     if len(sys.argv) == 5:
-        # TODO remove this repetition
-        if sys.argv[2].upper() in _WMs:
-            WM = sys.argv[2].upper()
-        else:
-            error("Invalid Window Manager")
-            anyErrors = True
+        WM = inList(sys.argv[2], _WMs, "Invalid Window Manager")
+        BG = inList(sys.argv[3], _BGs, "Invalid Background Manager")
+        SH = inList(sys.argv[4], _SHs, "Invalid Shell")
 
-        if sys.argv[3].upper() in _BGs:
-            BG = sys.argv[3].upper()
-        else:
-            error("Invalid Background Manager")
-            anyErrors = True
-
-        if sys.argv[4].upper() in _Shells:
-            SH = sys.argv[4].upper()
-        else:
-            error("Invalid Shell")
-            anyErrors = True
+        anyErrors = any(x == None for x in [WM, BG, SH])
 
     else:
         WMi = enumerateChoices(_WMs)
@@ -95,26 +89,27 @@ def setup():
         BGi = enumerateChoices(_BGs)
         BG  = config.BG[int(BGi)].getShortName()
 
-        SHi = enumerateChoices(_Shells)
+        SHi = enumerateChoices(_SHs)
         SH  = config.SHELL[int(SHi)].getShortName()
 
-    config_file = ConfigParser.RawConfigParser()
-    config_file.add_section(config.WP_CONFIG_SECTION)
-
-    config_file.set(config.WP_CONFIG_SECTION, "WindowManager",      WM)
-    config_file.set(config.WP_CONFIG_SECTION, "BackgroundManager",  BG)
-    config_file.set(config.WP_CONFIG_SECTION, "Shell",              SH)
-    
     if not anyErrors:
         with open(config.WP_CONFIG_FILE, 'w') as config_file_:
+            config_file = ConfigParser.RawConfigParser()
+            config_file.add_section(config.WP_CONFIG_SECTION)
+
+            config_file.set(config.WP_CONFIG_SECTION, "WindowManager",      WM)
+            config_file.set(config.WP_CONFIG_SECTION, "BackgroundManager",  BG)
+            config_file.set(config.WP_CONFIG_SECTION, "Shell",              SH)
+            
             config_file.write(config_file_)
+            output("New setup: {} {} {}".format(WM,BG,SH))
 
 def usage():
     output("Usage: {0}".format(sys.argv[0]))
-    output("            setup [WM BGM SHELL]    Run setup, with optional WindowManager, BackgroundManager and Shell")
-    output("            add   file1 [file2 ...] Add file(s), and generate metadata files")
-    output("            refresh                 Regenerate all metadata for images in " + config.WP_DIRECTORY)
-    
+    output("            setup   [WM BGM SHELL]      Run setup, with optional WindowManager, BackgroundManager and Shell")
+    output("            add     file1 [file2 ...]   Add file(s), and generate metadata files")
+    output("            refresh                     Regenerate all metadata for images in " + config.WP_DIRECTORY)
+    output("            help    setup               List all possible arguments to setup")
 # TODO don't bother adding files if they already exist
 def addAFile(oldPath):
     path      = config.WP_DIRECTORY + "/" + os.path.basename(oldPath)
@@ -201,6 +196,19 @@ def main():
                 images = imagesFromDirectory(config.WP_DIRECTORY)
                 output("Refreshing {} files, this could take some time. ".format(len(images)))
                 add(images)
+            elif cmd == "help":
+                output("Possible WMs:")
+                for wm in config.WM:
+                    output("  {}".format(wm.getShortName()))
+                output("Possible BGs:")
+                for bg in config.BG:
+                    output("  {}".format(bg.getShortName()))
+                output("Possible SHs:")
+                for sh in config.SHELL:
+                    output("  {}".format(sh.getShortName()))
+
+
+
             else:
                 return
             
