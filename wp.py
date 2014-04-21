@@ -8,6 +8,9 @@ import shutil
 
 import colour
 import config
+import subprocess
+
+import random
 
 from generic import *
 
@@ -122,8 +125,8 @@ def usage():
     print """
     wp
     Usage: {0}
-                setup [WM] [BGM]        Run setup, with optional WindowManager and BackgroundManager
-                add file1 [file2 ...]   Add file(s), and generate metadata files
+                setup [WM BGM SHELL]    Run setup, with optional WindowManager, BackgroundManager and Shell
+                add   file1 [file2 ...] Add file(s), and generate metadata files
     """.format(sys.argv[0])
 
 def addAFile(oldPath):
@@ -135,8 +138,8 @@ def addAFile(oldPath):
     # print colour.colourz(path)
     colours = colour.getColours(path)
 
-    print ":::: WM = " + _WM
-    print ":::: BG = " + _BG
+    # print ":::: WM = " + _WM
+    # print ":::: BG = " + _BG
 
     temp   = ""
     shcols = ""
@@ -161,6 +164,23 @@ def add():
     for idx, f in enumerate(sys.argv):
         if idx > 1:
             addAFile(f)
+
+def change():
+    
+    onlyfiles =  [ f for f in os.listdir(config.WP_DIRECTORY) if os.path.isfile(os.path.join(config.WP_DIRECTORY,f)) ]
+    images = []
+    output("Files:")
+    for f in onlyfiles:
+        fN, fE = os.path.splitext(f)
+        if fE in ['.png', '.jpg']:
+            images.append(f)
+            output("  " + f)
+
+    newBG = random.choice(images)
+    output("NEW :: " + newBG)
+
+    _BG.changeBackground(os.path.join(config.WP_DIRECTORY, newBG))
+    output("Changed background to " + newBG)
 
 def main():
 
@@ -187,6 +207,10 @@ def main():
 
             if cmd == "add":
                 add()
+            if cmd == "change":
+                change()
+            else:
+                return
             
     else:
         usage()
