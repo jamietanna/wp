@@ -123,7 +123,9 @@ def usage():
     output("Usage: {0}".format(sys.argv[0]))
     output("            setup [WM BGM SHELL]    Run setup, with optional WindowManager, BackgroundManager and Shell")
     output("            add   file1 [file2 ...] Add file(s), and generate metadata files")
+    output("            refresh                 Regenerate all metadata for images in " + config.WP_DIRECTORY)
     
+# TODO don't bother adding files if they already exist
 def addAFile(oldPath):
     path      = config.WP_DIRECTORY + "/" + os.path.basename(oldPath)
     path_meta = config.WP_DIRECTORY + "/." + os.path.basename(oldPath)
@@ -157,14 +159,17 @@ def add(files):
     for f in files:
         addAFile(f)
 
-def change():
-    onlyfiles =  [ f for f in os.listdir(config.WP_DIRECTORY) if os.path.isfile(os.path.join(config.WP_DIRECTORY,f)) ]
+def imagesFromDirectory(path):
+    onlyfiles =  [ f for f in os.listdir(path) if os.path.isfile(os.path.join(path,f)) ]
     images = []
     for f in onlyfiles:
         _, fE = os.path.splitext(f)
         if fE in config.ALLOWED_FILE_EXTS:
             images.append(f)
+    return images
 
+def change():
+    images = imagesFromDirectory(config.WP_DIRECTORY)
     newBG = random.choice(images)
 
     _BG.changeBackground(os.path.join(config.WP_DIRECTORY, newBG))
@@ -181,8 +186,8 @@ def main():
 
     signal.signal(signal.SIGINT, signal_handler)
 
-    debug('Number of arguments: '+ str(len(sys.argv)) + 'arguments.')
-    debug('Argument List:' + str(sys.argv))
+    debug('Number of arguments: '+ str(len(sys.argv)) + ' arguments.')
+    debug('Argument List: ' + str(sys.argv))
 
     if len(sys.argv) > 1:
         
@@ -201,13 +206,18 @@ def main():
             populateSettings()
 
             if cmd == "add":
+                # TODO check if all images
                 files = []
                 for idx, f in enumerate(sys.argv):
                     if idx > 1:
                         files.append(f)
                 add(files)
-            if cmd == "change":
+            elif cmd == "change":
                 change()
+            elif cmd == "refresh":
+                images = imagesFromDirectory(config.WP_DIRECTORY)
+                output("Refreshing {} files, this could take some time. ".format(len(images)))
+                add(images)
             else:
                 return
             
