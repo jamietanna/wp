@@ -18,11 +18,11 @@ class BackgroundManager(object):
         pass
 
     def getName(self):
-        return name
+        return self.name
 
     # override if you want a shorter name for the command-line
     def getShortName(self):
-        return name
+        return self.name
 
     def execute(self, args):
         ret = subprocess.call(args)
@@ -44,7 +44,7 @@ class GnomeWallpaper(BackgroundManager):
         self.execute(["gsettings", "set", "org.gnome.desktop.background", "picture-uri", "'file://" + path + "'"])
 
     def getShortName(self):
-        return "GnomeWP"
+        return "GNOMEWP"
 
 
 
@@ -59,11 +59,11 @@ class ConfigWriter(object):
         
 
     def getName(self):
-        return name
+        return self.name
 
     # override if you want a shorter name for the command-line
     def getShortName(self):
-        return name
+        return self.name
 
     def writeColoursToFile(self, colours, basePath):
         coloursForFile = self.formatColoursForFile(colours)

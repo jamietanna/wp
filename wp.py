@@ -26,13 +26,15 @@ def signal_handler(signal, frame):
 def populateFromArray(settingsArray, config_file, configFileKey, error_str):
     # wrap all the error handling in here, to make it quicker, and safer to 
     #  add new sections of code in for new settings types
-    
+
     try:
         configFileValue = config_file.get("wp", configFileKey)
-        
+
         for val in settingsArray:
             if configFileValue == val.getShortName():
                 return val
+        # if we reach this far, it's not valid!
+        raise Exception
     except:
         error("No valid " + error_str + " in config, please run setup again. ")
         return None
@@ -44,8 +46,10 @@ def populateSettings():
     global _WM, _BG, _SHELL
 
     _WM    = config_file.get("wp", "windowmanager")
-    _BG    = config_file.get("wp", "backgroundmanager")
-    _SHELL = populateFromArray(config.SHELL, "shell", config_file, "shell")
+    _BG    = populateFromArray(config.BG, config_file, "backgroundmanager", "background manager")
+
+    # config_file.get("wp", "backgroundmanager")
+    _SHELL = populateFromArray(config.SHELL, config_file, "shell", "shell")
 
     # if any of our variables are None, we've hit a non-existent value,
     #  therefore exit. 
@@ -66,9 +70,11 @@ def setup():
 
     # enumerateChoices(sys.argv)
     
-    _shells = []
-    for s in config.SHELL:
-        _shells.append(s.getShortName())
+    # _shells = []
+    # for s in config.SHELL:
+    #     _shells.append(s.getShortName())
+    _bgs    = [bg.getShortName() for bg in config.BG]
+    _shells = [s.getShortName()  for s in config.SHELL]
 
     if len(sys.argv) == 5:
         if sys.argv[2].upper() in config.WM:
@@ -77,7 +83,7 @@ def setup():
             error("Invalid Window Manager")
             anyErrors = True
 
-        if sys.argv[3].upper() in config.BG:
+        if sys.argv[3].upper() in _bgs:
             BG = sys.argv[3].upper()
         else:
             error("Invalid Background Manager")
@@ -92,11 +98,12 @@ def setup():
     else:
         WMi = enumerateChoices(config.WM)
         WM  = config.WM[int(WMi)]
-        BGi = enumerateChoices(config.BG)
-        BG  = config.BG[int(BGi)]
+
+        BGi = enumerateChoices(_bgs)
+        BG  = config.BG[int(BGi)].getShortName()
+
         SHi = enumerateChoices(_shells)
         SH  = config.SHELL[int(SHi)].getShortName()
-        output(SH)
 
     config_file = ConfigParser.RawConfigParser()
     config_file.add_section("wp")
@@ -106,7 +113,7 @@ def setup():
     config_file.set("wp", "Shell",              SH)
     
     if not anyErrors:
-        with open(config.WP_CONFIG_FILE, 'wb') as config_file_:
+        with open(config.WP_CONFIG_FILE, 'w') as config_file_:
             config_file.write(config_file_)
 
     pass

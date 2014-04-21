@@ -1,9 +1,9 @@
 import os
-from configwriters import *
+from applicationwrappers import *
 
 HOME_DIR = os.path.expanduser('~')
 WM    = ["I3",    "X",  "OTHER"]
-BG    = ["GNOME", "FEH"]
+BG    = [FehWallpaper(), GnomeWallpaper()]
 # SHELL = ["GNOME"]
 SHELL = [ShellColours(), GnomeShellColours()]
 WP_DIRECTORY = HOME_DIR + "/.wp"
