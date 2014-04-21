@@ -1,5 +1,10 @@
+"""
+Config settings for the wp application. 
+"""
+
 import os
-from applicationwrappers import *
+from applicationwrappers import FehWallpaper, GnomeWallpaper, ShellColours, \
+                                GnomeShellColours, I3WM
 
 HOME_DIR = os.path.expanduser('~')
 WM    = [I3WM()]

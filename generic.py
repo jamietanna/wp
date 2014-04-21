@@ -1,3 +1,9 @@
+"""
+Functions that don't need to necessarily be left in the main application code, 
+ but could be used for more general programs. 
+"""
+
+
 import config
 
 # Store this here otherwise we get circular references
