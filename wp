@@ -31,7 +31,7 @@ def populateFromArray(settingsArray, config_file, configFileKey, error_str):
     #  add new sections of code in for new settings types
 
     try:
-        configFileValue = config_file.get(WP_CONFIG_SECTION, configFileKey)
+        configFileValue = config_file.get(config.WP_CONFIG_SECTION, configFileKey)
 
         for val in settingsArray:
             if configFileValue == val.getShortName():
@@ -48,7 +48,7 @@ def populateSettings():
     config_file.read(config.WP_CONFIG_FILE)
     global _WM, _BG, _SHELL
 
-    _WM    = config_file.get  (WP_CONFIG_SECTION, "windowmanager")
+    _WM    = config_file.get  (config.WP_CONFIG_SECTION, "windowmanager")
 
     _BG    = populateFromArray(config.BG,   config_file, "backgroundmanager", "background manager")
     _SHELL = populateFromArray(config.SHELL,config_file, "shell",             "shell")
