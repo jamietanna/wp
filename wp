@@ -1,4 +1,10 @@
 #!/usr/bin/python
+"""
+wp is a tool to change your background, and generate a colour scheme for your 
+ shell, and window manager. 
+"""
+
+# TODO change background, but not colours
 
 import sys
 import os
@@ -14,12 +20,6 @@ import random
 from generic import output, error, debug, enumerate_choices, in_list_upper
 import applicationwrappers
 
-class user_config:
-    WM    = None
-    BG    = None
-    SHELL = None
-
-
 
 
 def sigint_handler( _ ):
@@ -28,7 +28,7 @@ def sigint_handler( _ ):
      globally handle a SIGINT by calling sigint_handler, which displays a 
      message and exits the program, with an error status code. 
     
-    SO 1112343
+    http://stackoverflow.com/questions/1112343/how-do-i-capture-sigint-in-python
     """
     print
     error("User cancelled operation(s). ")
@@ -65,20 +65,20 @@ def populate_from_array(settings_array, config_file,
 def populate_settings():
     """
     Populate the settings from the config file, exiting if any errors occur. 
-     We store all settings in a global point of access - user_config. 
+     We store all settings in a global point of access - config.User_Config. 
     """
     config_file = ConfigParser.ConfigParser()
     config_file.read(config.WP_CONFIG_FILE)
 
-    user_config.WM    = populate_from_array(applicationwrappers.WM,   
+    config.User_Config.WM    = populate_from_array(applicationwrappers.WM,   
                                             config_file, 
                                             config.WM_CONFIG_KEY, 
                                             "window manager")
-    user_config.BG    = populate_from_array(applicationwrappers.BG,   
+    config.User_Config.BG    = populate_from_array(applicationwrappers.BG,   
                                             config_file, 
                                             config.BG_CONFIG_KEY, 
                                             "background manager")
-    user_config.SHELL = populate_from_array(applicationwrappers.SHELL,
+    config.User_Config.SHELL = populate_from_array(applicationwrappers.SHELL,
                                             config_file, 
                                             config.SH_CONFIG_KEY, 
                                             "shell")
@@ -86,13 +86,15 @@ def populate_settings():
     # if any of our variables are None, we've hit a non-existent value,
     #  therefore exit. 
     if any(x == None for x in 
-                        [user_config.WM, user_config.BG, user_config.SHELL]):
+                        [config.User_Config.WM,
+                         config.User_Config.BG, 
+                         config.User_Config.SHELL]):
         sys.exit(1)
 
 
 def setup():
     poss_bgs    = [bg.get_short_name()    for bg in applicationwrappers.BG]
-    poss_shs    = [s.get_short_name()     for s  in applicationwrappers.SHELL]
+    poss_shs    = [ s.get_short_name()    for s  in applicationwrappers.SHELL]
     poss_wms    = [wm.get_short_name()    for wm in applicationwrappers.WM]
 
     if len(sys.argv) == 5:
@@ -147,7 +149,8 @@ def addAFile(old_path):
     colours = colour.get_colours(path)
 
     # TODO WM.write_colours_to_file()
-    user_config.SHELL.write_colours_to_file(colours, os.path.basename(old_path))
+    config.User_Config.SHELL.write_colours_to_file(colours, 
+        os.path.basename(old_path))
 
 def add(files):
     for f in files:
@@ -169,14 +172,14 @@ def change():
 
     joined = os.path.join(config.WP_DIRECTORY, newBG)
 
-    user_config.BG.change_background(joined)
+    config.User_Config.BG.change_background(joined)
 
-    __path = user_config.SHELL.get_path(joined)
+    __path = config.User_Config.SHELL.get_path(joined)
     if not os.path.exists(__path):
         output("Note: No metadata found, generating now")
         addAFile(os.path.join(config.WP_DIRECTORY, newBG))
 
-    user_config.SHELL.on_background_change(joined)
+    config.User_Config.SHELL.on_background_change(joined)
     output("Changed background to " + newBG)
 
 def handle_cmd(cmd):

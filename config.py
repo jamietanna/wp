@@ -16,3 +16,11 @@ INDENT_STR = ":: "
 WM_CONFIG_KEY = "window_manager"
 BG_CONFIG_KEY = "background_manager"
 SH_CONFIG_KEY = "shell"
+
+class User_Config:
+    """
+    Static class to store user's data
+    """
+    WM    = None
+    BG    = None
+    SHELL = None
