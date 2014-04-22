@@ -132,6 +132,8 @@ def setup():
             
             config_file.write(config_file_)
             output("New setup: {} {} {}".format(new_wm, new_bg, new_sh))
+            output("Note that you may need to run `wp refresh` if you have"
+                 + "any existing files")
 
 
 def usage():
@@ -168,6 +170,9 @@ def add_file(old_path):
     colours = colour.get_colours(path)
 
     # TODO WM.write_colours_to_file()
+
+    config.Userconfig.WM.write_colours_to_file(colours, 
+        os.path.basename(old_path))
     config.Userconfig.SHELL.write_colours_to_file(colours, 
         os.path.basename(old_path))
 
@@ -200,6 +205,7 @@ def change_background():
         add_file(os.path.join(config.WP_DIRECTORY, new_bg))
 
     config.Userconfig.SHELL.on_background_change(joined)
+    config.Userconfig.WM.on_background_change(joined)
     output("Changed background to " + new_bg)
 
 def display_help():

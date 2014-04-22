@@ -152,9 +152,11 @@ class I3wm(Windowmanager):
         error("NOTE: I3WM has not been implemented yet. ")
 
     def format_colours_for_file(self, colours):
+        error("NOTE: I3WM has not been implemented yet. ")
         pass
 
     def write_colours_to_file(self, colours, _ ):
+        error("NOTE: I3WM has not been implemented yet. ")
         pass
 
     def get_path(self, base_path):
@@ -164,6 +166,7 @@ class I3wm(Windowmanager):
         return "I3WM"
 
     def on_background_change(self, base_path):
+        error("NOTE: I3WM has not been implemented yet. ")
         pass
 
 ## </WM>
