@@ -2,6 +2,9 @@ from colorz import colorz
 from math   import sqrt
 import colorsys
 
+from array import array
+from generic import output
+
 def torgb(hexv):
     hexv = hexv[1:]
     r, g, b = (
@@ -34,12 +37,21 @@ def to_hsv(c):
     return h, s, v
 
 def get_colours(path):
+    colours = colorz(path, 16)
+    # ####### HACK! !!!!!!!!!!!!!!!!!!!!!!!!
+    # colours = ['#774d38', '#4a3a2b', '#f1ae39', '#d37837', '#182220', '#a15330', '#0e1211', '#212e2c', '#5e4534', '#f6f5b6', '#28271f', '#f4de5b', '#434338', '#34352d', '#030201', '#649386']
 
+    colours_sort = list(colours)
+    colours_sort.sort(key=lambda  x:darkness(x), reverse=True)
+
+    colours_normalised = []
     ret = []
 
-    colours = colorz(path, 16)
-    colours.sort(key=lambda  x:darkness(x), reverse=True)
-    for i, c in enumerate(colours):
+    indexes = array('i', [0] * 16)
+    for idx, c in enumerate(colours_sort):
+        indexes[colours.index(c)] = idx
+
+    for i, c in enumerate(colours_sort):
         if i == 0:
             c = normalize(c, minv=0, maxv=32)
         elif i == 8:
@@ -49,6 +61,12 @@ def get_colours(path):
         else:
             c = normalize(c, minv=200, maxv=256)
         c = normalize(c, minv=32, maxv=224)
-        ret.append(c)
+        colours_normalised.append(c)
+
+    # for c in colours_normalised:
+
+    for idx, val in enumerate(indexes):
+        ret.append(colours_normalised[val])
 
     return ret
+
