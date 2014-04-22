@@ -31,12 +31,14 @@ def signal_handler(signal, frame):
     sys.exit(1)
 
 
-def populate_from_array(settings_array, config_file, config_file_key, error_str):
+def populate_from_array(settings_array, config_file, 
+                        config_file_key, error_str):
     # wrap all the error handling in here, to make it quicker, and safer to 
     #  add new sections of code in for new settings types
 
     try:
-        config_file_value = config_file.get(config.WP_CONFIG_SECTION, config_file_key)
+        config_file_value = config_file.get(config.WP_CONFIG_SECTION, 
+                                            config_file_key)
 
         for val in settings_array:
             if config_file_value == val.get_short_name():
@@ -52,13 +54,23 @@ def populate_settings():
     config_file = ConfigParser.ConfigParser()
     config_file.read(config.WP_CONFIG_FILE)
 
-    user_config.WM    = populate_from_array(applicationwrappers.WM,   config_file, config.WM_CONFIG_KEY, "window manager")
-    user_config.BG    = populate_from_array(applicationwrappers.BG,   config_file, config.BG_CONFIG_KEY, "background manager")
-    user_config.SHELL = populate_from_array(applicationwrappers.SHELL,config_file, config.SH_CONFIG_KEY, "shell")
+    user_config.WM    = populate_from_array(applicationwrappers.WM,   
+                                            config_file, 
+                                            config.WM_CONFIG_KEY, 
+                                            "window manager")
+    user_config.BG    = populate_from_array(applicationwrappers.BG,   
+                                            config_file, 
+                                            config.BG_CONFIG_KEY, 
+                                            "background manager")
+    user_config.SHELL = populate_from_array(applicationwrappers.SHELL,
+                                            config_file, 
+                                            config.SH_CONFIG_KEY, 
+                                            "shell")
 
     # if any of our variables are None, we've hit a non-existent value,
     #  therefore exit. 
-    if any(x == None for x in [user_config.WM, user_config.BG, user_config.SHELL]):
+    if any(x == None for x in 
+                        [user_config.WM, user_config.BG, user_config.SHELL]):
        sys.exit(1)
 
 
@@ -137,7 +149,8 @@ def add(files):
         addAFile(f)
 
 def images_from_directory(path):
-    onlyfiles =  [ f for f in os.listdir(path) if os.path.isfile(os.path.join(path,f)) ]
+    onlyfiles =  [ f for f in os.listdir(path)
+                                if os.path.isfile(os.path.join(path,f)) ]
     images = []
     for f in onlyfiles:
         _, fE = os.path.splitext(f)
@@ -149,14 +162,16 @@ def change():
     images = images_from_directory(config.WP_DIRECTORY)
     newBG = random.choice(images)
 
-    user_config.BG.change_background(os.path.join(config.WP_DIRECTORY, newBG))
+    joined = os.path.join(config.WP_DIRECTORY, newBG)
 
-    __path = user_config.SHELL.get_path(os.path.join(config.WP_DIRECTORY, newBG))
+    user_config.BG.change_background(joined)
+
+    __path = user_config.SHELL.get_path(joined)
     if not os.path.exists(__path):
         output("Note: No metadata found, generating now")
         addAFile(os.path.join(config.WP_DIRECTORY, newBG))
 
-    user_config.SHELL.on_background_change(os.path.join(config.WP_DIRECTORY, newBG))
+    user_config.SHELL.on_background_change(joined)
     output("Changed background to " + newBG)
 
 def main():
@@ -193,7 +208,8 @@ def main():
                 change()
             elif cmd == "refresh":
                 images = images_from_directory(config.WP_DIRECTORY)
-                output("Refreshing {} files, this could take some time. ".format(len(images)))
+                output("Refreshing {} files, this could take some time. "
+                        .format(len(images)))
                 add(images)
             elif cmd == "help":
                 output("Possible WMs:")
