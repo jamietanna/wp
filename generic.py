@@ -3,6 +3,8 @@ Functions that don't need to necessarily be left in the main application code,
  but could be used for more general programs. 
 """
 
+# pylint: disable=W1401 
+# ignore \0 errors, we need it for ansi colours
 
 import config
 

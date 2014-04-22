@@ -22,12 +22,13 @@ class user_config:
 
 
 
-# SO 1112343
-def sigint_handler(signal_int, frame):
+def sigint_handler( _ ):
     """
     Instead of having to CTRL-C a number of times when wanting to exit a script,
      globally handle a SIGINT by calling sigint_handler, which displays a 
      message and exits the program, with an error status code. 
+    
+    SO 1112343
     """
     print
     error("User cancelled operation(s). ")
@@ -95,9 +96,12 @@ def setup():
     poss_wms    = [wm.get_short_name()    for wm in applicationwrappers.WM]
 
     if len(sys.argv) == 5:
-        new_wm = in_list_upper(sys.argv[2], poss_wms, "Invalid Window Manager")
-        new_bg = in_list_upper(sys.argv[3], poss_bgs, "Invalid Background Manager")
-        new_sh = in_list_upper(sys.argv[4], poss_shs, "Invalid Shell")
+        new_wm = in_list_upper(sys.argv[2], poss_wms, 
+                                "Invalid Window Manager")
+        new_bg = in_list_upper(sys.argv[3], poss_bgs, 
+                                "Invalid Background Manager")
+        new_sh = in_list_upper(sys.argv[4], poss_shs, 
+                                "Invalid Shell")
 
     else:
         wm_int = int(enumerate_choices(poss_wms))
@@ -126,11 +130,13 @@ def setup():
 
 
 def usage():
+    # pylint: disable=C0301
     output("Usage: {0}".format(sys.argv[0]))
     output("            setup   [WM BGM SHELL]      Run setup, with optional Window_manager, Background_manager and Shell")
     output("            add     file1 [file2 ...]   Add file(s), and generate metadata files")
     output("            refresh                     Regenerate all metadata for images in " + config.WP_DIRECTORY)
     output("            help    setup               List all possible arguments to setup")
+
 # TODO don't bother adding files if they already exist
 def addAFile(old_path):
     path      = config.WP_DIRECTORY + "/" + os.path.basename(old_path)
