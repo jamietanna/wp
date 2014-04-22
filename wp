@@ -20,9 +20,7 @@ import random
 from generic import output, error, debug, enumerate_choices, in_list_upper
 import applicationwrappers
 
-
-
-def sigint_handler( _ ):
+def sigint_handler( signal_int, frame ):
     """
     Instead of having to CTRL-C a number of times when wanting to exit a script,
      globally handle a SIGINT by calling sigint_handler, which displays a 
@@ -93,6 +91,10 @@ def populate_settings():
 
 
 def setup():
+    """
+    Write to our config file. Accept either command-line options, or 
+     interactively get user input. 
+    """
     poss_bgs    = [bg.get_short_name()    for bg in applicationwrappers.BG]
     poss_shs    = [ s.get_short_name()    for s  in applicationwrappers.SHELL]
     poss_wms    = [wm.get_short_name()    for wm in applicationwrappers.WM]
@@ -132,16 +134,24 @@ def setup():
 
 
 def usage():
+    """
+    Output the different options the tools allows.
+    """
     # pylint: disable=C0301
     output("Usage: {0}".format(sys.argv[0]))
     output("            setup   [WM BGM SHELL]      Run setup, with optional Window_manager, Background_manager and Shell")
     output("            add     file1 [file2 ...]   Add file(s), and generate metadata files")
     output("            refresh                     Regenerate all metadata for images in " + config.WP_DIRECTORY)
-    output("            help    setup               List all possible arguments to setup")
+    output("            help                        List all possible arguments to setup")
 
 # TODO don't bother adding files if they already exist
 def addAFile(old_path):
+    """
+    Add a file to the config folder, and write all the config files. 
+    """
     path      = config.WP_DIRECTORY + "/" + os.path.basename(old_path)
+
+    output("Adding file {}".format(os.path.basename(old_path)))
 
     if not os.path.exists(path):
         shutil.copy(old_path, path)
@@ -151,10 +161,6 @@ def addAFile(old_path):
     # TODO WM.write_colours_to_file()
     config.Userconfig.SHELL.write_colours_to_file(colours, 
         os.path.basename(old_path))
-
-def add(files):
-    for f in files:
-        addAFile(f)
 
 def images_from_directory(path):
     onlyfiles =  [ f for f in os.listdir(path)
@@ -194,7 +200,7 @@ def display_help():
     output("Possible SHs:")
     for sh in applicationwrappers.SHELL:
         output("  {}".format(sh.get_short_name()))
-        
+
 def handle_cmd(cmd):
     if cmd == "setup":
         setup()
@@ -211,9 +217,10 @@ def handle_cmd(cmd):
         
         if cmd == "add":
             # TODO check if all images
-            files = sys.argv[2:]
-            if len(files) > 0:
-                add(files)
+            if len(sys.argv) > 2:
+                for arg in sys.argv[2:]:
+                    addAFile(arg)
+
             else:
                 error("Please enter some files to add")
         elif cmd == "change":
