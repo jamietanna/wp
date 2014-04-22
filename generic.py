@@ -66,3 +66,16 @@ def execute(args):
         error("Some unknown error occured when executing {}".
                 format(args[0]))
         debug("Error code {} when calling [{}]".format(ret, " ".join(args)))
+
+
+
+def in_list_upper(to_check, the_list, error_str):
+    """
+    Check if an uppercased value is in a given the_list, and if so, return it. 
+     Otherwise, return none, and output an error.
+    """
+    if to_check.upper() in the_list:
+        return to_check.upper()
+    else:
+        error(error_str)
+        return None

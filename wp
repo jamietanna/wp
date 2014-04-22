@@ -11,7 +11,7 @@ import config
 
 import random
 
-from generic import output, error, debug, enumerate_choices
+from generic import output, error, debug, enumerate_choices, in_list_upper
 import applicationwrappers
 
 class user_config:
@@ -23,7 +23,12 @@ class user_config:
 
 
 # SO 1112343
-def sigint_handler():
+def sigint_handler(signal_int, frame):
+    """
+    Instead of having to CTRL-C a number of times when wanting to exit a script,
+     globally handle a SIGINT by calling sigint_handler, which displays a 
+     message and exits the program, with an error status code. 
+    """
     print
     error("User cancelled operation(s). ")
     error("Now exiting. ")
@@ -32,8 +37,16 @@ def sigint_handler():
 
 def populate_from_array(settings_array, config_file, 
                         config_file_key, error_str):
-    # wrap all the error handling in here, to make it quicker, and safer to 
-    #  add new sections of code in for new settings types
+    """
+    If the value stored in config_file at the specified config_file_key, in 
+     config.WP_CONFIG_SECTION, matches a value in settings_array, return it. 
+     If the value is not found, or if there is an error reading the config_file,
+     return None, and output an error. 
+
+    We wrap all our error handling in here to make it easier (and safer) to add
+     new sections, which can call this function, instead of having to add this
+     code manually
+    """
 
     try:
         config_file_value = config_file.get(config.WP_CONFIG_SECTION, 
@@ -49,6 +62,10 @@ def populate_from_array(settings_array, config_file,
         return None
 
 def populate_settings():
+    """
+    Populate the settings from the config file, exiting if any errors occur. 
+     We store all settings in a global point of access - user_config. 
+    """
     config_file = ConfigParser.ConfigParser()
     config_file.read(config.WP_CONFIG_FILE)
 
@@ -72,22 +89,15 @@ def populate_settings():
         sys.exit(1)
 
 
-def in_list(to_check, the_list, error_str):
-    if to_check.upper() in the_list:
-        return to_check.upper()
-    else:
-        error(error_str)
-        return None
-
 def setup():
     _BGs    = [bg.get_short_name()    for bg in applicationwrappers.BG]
     _SHs    = [s.get_short_name()     for s  in applicationwrappers.SHELL]
     _WMs    = [wm.get_short_name()    for wm in applicationwrappers.WM]
 
     if len(sys.argv) == 5:
-        WM = in_list(sys.argv[2], _WMs, "Invalid Window Manager")
-        BG = in_list(sys.argv[3], _BGs, "Invalid Background Manager")
-        SH = in_list(sys.argv[4], _SHs, "Invalid Shell")
+        WM = in_list_upper(sys.argv[2], _WMs, "Invalid Window Manager")
+        BG = in_list_upper(sys.argv[3], _BGs, "Invalid Background Manager")
+        SH = in_list_upper(sys.argv[4], _SHs, "Invalid Shell")
 
     else:
         WMi = enumerate_choices(_WMs)
