@@ -21,6 +21,7 @@ from generic import output, error, debug, enumerate_choices, in_list_upper
 import applicationwrappers
 
 def sigint_handler( signal_int, frame ):
+    # pylint: disable=W0613
     """
     Instead of having to CTRL-C a number of times when wanting to exit a script,
      globally handle a SIGINT by calling sigint_handler, which displays a 
@@ -144,6 +145,14 @@ def usage():
     output("            refresh                     Regenerate all metadata for images in " + config.WP_DIRECTORY)
     output("            help                        List all possible arguments to setup")
 
+def is_image_file(image_path):
+    """
+    Determine whether a file is an image, as denoted by its file extension. 
+    """
+    _, ext = os.path.splitext(image_path)
+    return ext in config.ALLOWED_FILE_EXTS
+
+
 # TODO don't bother adding files if they already exist
 def add_file(old_path):
     """
@@ -163,32 +172,42 @@ def add_file(old_path):
         os.path.basename(old_path))
 
 def images_from_directory(path):
-    onlyfiles =  [ f for f in os.listdir(path)
-                                if os.path.isfile(os.path.join(path,f)) ]
-    images = []
-    for f in onlyfiles:
-        _, fE = os.path.splitext(f)
-        if fE in config.ALLOWED_FILE_EXTS:
-            images.append(f)
-    return images
+    """
+    Given a directory, grab all image files
+    """
+    # would be so much easier in Haskell...
+    onlyfiles = [f for f in os.listdir(path) 
+                    if os.path.isfile( os.path.join(path, f) ) ]
 
-def change():
+    return [f for f in onlyfiles if is_image_file(f) ]
+
+def change_background():
+    """
+    Change the background to a random image from the config directory.
+
+    TODO: make it so it doesn't go to the same background in a row
+    """
     images = images_from_directory(config.WP_DIRECTORY)
-    newBG = random.choice(images)
+    new_bg = random.choice(images)
 
-    joined = os.path.join(config.WP_DIRECTORY, newBG)
+    joined = os.path.join(config.WP_DIRECTORY, new_bg)
 
     config.Userconfig.BG.change_background(joined)
 
     __path = config.Userconfig.SHELL.get_path(joined)
     if not os.path.exists(__path):
         output("Note: No metadata found, generating now")
-        add_file(os.path.join(config.WP_DIRECTORY, newBG))
+        add_file(os.path.join(config.WP_DIRECTORY, new_bg))
 
     config.Userconfig.SHELL.on_background_change(joined)
-    output("Changed background to " + newBG)
+    output("Changed background to " + new_bg)
 
 def display_help():
+    # pylint: disable=C0103
+    """
+    Display the help message, which is for the setup() command. Other commands
+     /should/ be self explanatory. 
+    """
     output("Possible WMs:")
     for wm in applicationwrappers.WM:
         output("  {}".format(wm.get_short_name()))
@@ -201,15 +220,24 @@ def display_help():
     for sh in applicationwrappers.SHELL:
         output("  {}".format(sh.get_short_name()))
 
-def add(images):
-    # TODO check if all images
-    if len(images) > 0:
-        for arg in images:
+def add_images(files):
+    """
+    Given a list of files, add all images to the config directory. 
+    """
+    filtered = [f for f in files if is_image_file(f) ]
+
+    if len(filtered) > 0:
+        for arg in filtered:
             add_file(arg)
     else:
         error("Please enter some files to add")
 
 def handle_cmd(cmd):
+    """
+    Call appropriate functions that match with the command the user issued after
+     wp. 
+     i.e. wp setup -> setup()
+    """
     if cmd == "setup":
         setup()
     else:
@@ -224,14 +252,14 @@ def handle_cmd(cmd):
         populate_settings()
         
         if cmd == "add":
-            add(sys.argv[2:])
+            add_images(sys.argv[2:])
         elif cmd == "change":
-            change()
+            change_background()
         elif cmd == "refresh":
             images = images_from_directory(config.WP_DIRECTORY)
             output("Refreshing {} files, this could take some time. "
                     .format(len(images)))
-            add(images)
+            add_images(images)
         elif cmd == "help":
             display_help()
         else:
@@ -239,6 +267,10 @@ def handle_cmd(cmd):
             usage()
 
 def main():
+    """
+    Run the wp tool, which then delegates control to handle_cmd() or usage() as
+     appropriate.
+    """
     # if we ever get an interrupt, call our own handler
     signal.signal(signal.SIGINT, sigint_handler)
 
