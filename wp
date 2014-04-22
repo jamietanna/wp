@@ -15,7 +15,7 @@ import random
 from generic import *
 import applicationwrappers
 
-class UserConfig:
+class user_config:
     WM    = None
     BG    = None
     SHELL = None
@@ -31,15 +31,15 @@ def signal_handler(signal, frame):
     sys.exit(1)
 
 
-def populateFromArray(settingsArray, config_file, configFileKey, error_str):
+def populate_from_array(settings_array, config_file, config_file_key, error_str):
     # wrap all the error handling in here, to make it quicker, and safer to 
     #  add new sections of code in for new settings types
 
     try:
-        configFileValue = config_file.get(config.WP_CONFIG_SECTION, configFileKey)
+        config_file_value = config_file.get(config.WP_CONFIG_SECTION, config_file_key)
 
-        for val in settingsArray:
-            if configFileValue == val.getShortName():
+        for val in settings_array:
+            if config_file_value == val.get_short_name():
                 return val
         # if we reach this far, it's not valid!
         raise Exception
@@ -48,97 +48,95 @@ def populateFromArray(settingsArray, config_file, configFileKey, error_str):
         return None
 
 
-def populateSettings():
+def populate_settings():
     config_file = ConfigParser.ConfigParser()
     config_file.read(config.WP_CONFIG_FILE)
 
-    UserConfig.WM    = populateFromArray(applicationwrappers.WM,   config_file, "windowmanager",     "window manager")
-    UserConfig.BG    = populateFromArray(applicationwrappers.BG,   config_file, "backgroundmanager", "background manager")
-    UserConfig.SHELL = populateFromArray(applicationwrappers.SHELL,config_file, "shell",             "shell")
+    user_config.WM    = populate_from_array(applicationwrappers.WM,   config_file, config.WM_CONFIG_KEY, "window manager")
+    user_config.BG    = populate_from_array(applicationwrappers.BG,   config_file, config.BG_CONFIG_KEY, "background manager")
+    user_config.SHELL = populate_from_array(applicationwrappers.SHELL,config_file, config.SH_CONFIG_KEY, "shell")
 
     # if any of our variables are None, we've hit a non-existent value,
     #  therefore exit. 
-    if any(x == None for x in [UserConfig.WM, UserConfig.BG, UserConfig.SHELL]):
+    if any(x == None for x in [user_config.WM, user_config.BG, user_config.SHELL]):
        sys.exit(1)
 
 
-def inList(toCheck, theList, error_str):
-    if toCheck.upper() in theList:
-        return toCheck.upper()
+def in_list(to_check, the_list, error_str):
+    if to_check.upper() in the_list:
+        return to_check.upper()
     else:
         error(error_str)
         return None
 
 def setup():
-    anyErrors = False
+    any_errors = False
 
-    _BGs    = [bg.getShortName()    for bg in applicationwrappers.BG]
-    _SHs    = [s.getShortName()     for s in applicationwrappers.SHELL]
-    _WMs    = [wm.getShortName()    for wm in applicationwrappers.WM]
+    _BGs    = [bg.get_short_name()    for bg in applicationwrappers.BG]
+    _SHs    = [s.get_short_name()     for s  in applicationwrappers.SHELL]
+    _WMs    = [wm.get_short_name()    for wm in applicationwrappers.WM]
 
     if len(sys.argv) == 5:
-        WM = inList(sys.argv[2], _WMs, "Invalid Window Manager")
-        BG = inList(sys.argv[3], _BGs, "Invalid Background Manager")
-        SH = inList(sys.argv[4], _SHs, "Invalid Shell")
-
-        anyErrors = any(x == None for x in [WM, BG, SH])
+        WM = in_list(sys.argv[2], _WMs, "Invalid Window Manager")
+        BG = in_list(sys.argv[3], _BGs, "Invalid Background Manager")
+        SH = in_list(sys.argv[4], _SHs, "Invalid Shell")
 
     else:
-        WMi = enumerateChoices(_WMs)
-        WM  = applicationwrappers.WM[int(WMi)].getShortName()
+        WMi = enumerate_choices(_WMs)
+        WM  = applicationwrappers.WM[int(WMi)].get_short_name()
 
-        BGi = enumerateChoices(_BGs)
-        BG  = applicationwrappers.BG[int(BGi)].getShortName()
+        BGi = enumerate_choices(_BGs)
+        BG  = applicationwrappers.BG[int(BGi)].get_short_name()
 
-        SHi = enumerateChoices(_SHs)
-        SH  = applicationwrappers.SHELL[int(SHi)].getShortName()
+        SHi = enumerate_choices(_SHs)
+        SH  = applicationwrappers.SHELL[int(SHi)].get_short_name()
 
-    if not anyErrors:
+    if not any(x == None for x in [WM, BG, SH]):
         with open(config.WP_CONFIG_FILE, 'w') as config_file_:
             config_file = ConfigParser.RawConfigParser()
             config_file.add_section(config.WP_CONFIG_SECTION)
 
-            config_file.set(config.WP_CONFIG_SECTION, "WindowManager",      WM)
-            config_file.set(config.WP_CONFIG_SECTION, "BackgroundManager",  BG)
-            config_file.set(config.WP_CONFIG_SECTION, "Shell",              SH)
+            config_file.set(config.WP_CONFIG_SECTION, config.WM_CONFIG_KEY, WM)
+            config_file.set(config.WP_CONFIG_SECTION, config.BG_CONFIG_KEY, BG)
+            config_file.set(config.WP_CONFIG_SECTION, config.SH_CONFIG_KEY, SH)
             
             config_file.write(config_file_)
             output("New setup: {} {} {}".format(WM,BG,SH))
 
 def usage():
     output("Usage: {0}".format(sys.argv[0]))
-    output("            setup   [WM BGM SHELL]      Run setup, with optional WindowManager, BackgroundManager and Shell")
+    output("            setup   [WM BGM SHELL]      Run setup, with optional Window_manager, Background_manager and Shell")
     output("            add     file1 [file2 ...]   Add file(s), and generate metadata files")
     output("            refresh                     Regenerate all metadata for images in " + config.WP_DIRECTORY)
     output("            help    setup               List all possible arguments to setup")
 # TODO don't bother adding files if they already exist
-def addAFile(oldPath):
-    path      = config.WP_DIRECTORY + "/" + os.path.basename(oldPath)
+def addAFile(old_path):
+    path      = config.WP_DIRECTORY + "/" + os.path.basename(old_path)
 
     if not os.path.exists(path):
-        shutil.copy(oldPath, path)
+        shutil.copy(old_path, path)
 
-    colours = colour.getColours(path)
+    colours = colour.get_colours(path)
 
     temp   = ""
     shcols = ""
 
     for idx, c in enumerate(colours):
-        if UserConfig.WM == "I3":
+        if user_config.WM == "I3":
             pass
-        elif UserConfig.WM == "X":
+        elif user_config.WM == "X":
             temp += """*color{}: {}\n""".format(idx, c)
-        elif UserConfig.WM == "OTHER":
+        elif user_config.WM == "OTHER":
             pass
         shcols += """export COLOR{}="{}"\n""".format(idx, c)
     
-    UserConfig.SHELL.writeColoursToFile(colours, os.path.basename(oldPath))
+    user_config.SHELL.write_colours_to_file(colours, os.path.basename(old_path))
 
 def add(files):
     for f in files:
         addAFile(f)
 
-def imagesFromDirectory(path):
+def images_from_directory(path):
     onlyfiles =  [ f for f in os.listdir(path) if os.path.isfile(os.path.join(path,f)) ]
     images = []
     for f in onlyfiles:
@@ -148,17 +146,17 @@ def imagesFromDirectory(path):
     return images
 
 def change():
-    images = imagesFromDirectory(config.WP_DIRECTORY)
+    images = images_from_directory(config.WP_DIRECTORY)
     newBG = random.choice(images)
 
-    UserConfig.BG.changeBackground(os.path.join(config.WP_DIRECTORY, newBG))
+    user_config.BG.change_background(os.path.join(config.WP_DIRECTORY, newBG))
 
-    __path = UserConfig.SHELL.getPath(os.path.join(config.WP_DIRECTORY, newBG))
+    __path = user_config.SHELL.get_path(os.path.join(config.WP_DIRECTORY, newBG))
     if not os.path.exists(__path):
         output("Note: No metadata found, generating now")
         addAFile(os.path.join(config.WP_DIRECTORY, newBG))
 
-    UserConfig.SHELL.onBackgroundChange(os.path.join(config.WP_DIRECTORY, newBG))
+    user_config.SHELL.on_background_change(os.path.join(config.WP_DIRECTORY, newBG))
     output("Changed background to " + newBG)
 
 def main():
@@ -182,7 +180,7 @@ def main():
                 setup()
             # do rest of 'switch' statement
 
-            populateSettings()
+            populate_settings()
 
             if cmd == "add":
                 # TODO check if all images
@@ -194,19 +192,19 @@ def main():
             elif cmd == "change":
                 change()
             elif cmd == "refresh":
-                images = imagesFromDirectory(config.WP_DIRECTORY)
+                images = images_from_directory(config.WP_DIRECTORY)
                 output("Refreshing {} files, this could take some time. ".format(len(images)))
                 add(images)
             elif cmd == "help":
                 output("Possible WMs:")
                 for wm in applicationwrappers.WM:
-                    output("  {}".format(wm.getShortName()))
+                    output("  {}".format(wm.get_short_name()))
                 output("Possible BGs:")
                 for bg in applicationwrappers.BG:
-                    output("  {}".format(bg.getShortName()))
+                    output("  {}".format(bg.get_short_name()))
                 output("Possible SHs:")
                 for sh in applicationwrappers.SHELL:
-                    output("  {}".format(sh.getShortName()))
+                    output("  {}".format(sh.get_short_name()))
 
 
 

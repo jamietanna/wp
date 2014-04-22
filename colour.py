@@ -33,7 +33,7 @@ def to_hsv(c):
     h, s, v = colorsys.rgb_to_hsv(r, g, b)
     return h, s, v
 
-def getColours(path):
+def get_colours(path):
 
     ret = []
 
