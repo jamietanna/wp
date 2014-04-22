@@ -11,7 +11,7 @@ from generic import error, execute
 
 ## <BASE>
 
-class application_wrapper(object):
+class Applicationwrapper(object):
     """
     A default base class for all wp classes - define some standard methods, and
      make sure the interpreter knows that we're using an abstract class. 
@@ -20,7 +20,7 @@ class application_wrapper(object):
     name = ""
 
     def __init__(self, name):
-        super(application_wrapper, self).__init__()
+        super(Applicationwrapper, self).__init__()
         self.name = name
 
 
@@ -39,12 +39,12 @@ class application_wrapper(object):
         """
         return self.name
 
-class background_manager(application_wrapper):
+class Backgroundmanager(Applicationwrapper):
     """
     A class to execute the system commands depending on background manager used.
     """
     def __init__(self, name):
-        super(background_manager, self).__init__(name)
+        super(Backgroundmanager, self).__init__(name)
 
     @abstractmethod
     def change_background(self, path):
@@ -53,22 +53,22 @@ class background_manager(application_wrapper):
         """
         pass
 
-class config_writer(application_wrapper):
+class Configwriter(Applicationwrapper):
     """
     A class to handle the writing of colours to a config file in a specific 
      format (format_colours_for_file())
     """
 
     def __init__(self, name):
-        super(config_writer, self).__init__(name)
+        super(Configwriter, self).__init__(name)
 
     def write_colours_to_file(self, colours, base_path):
         """
         Write colours to the correct path, in the correct format. 
         """
         colours_for_file = self.format_colours_for_file(colours)
-        with open(self.get_path(base_path), 'w') as f:
-            f.write(colours_for_file)
+        with open(self.get_path(base_path), 'w') as config_file:
+            config_file.write(colours_for_file)
 
     @abstractmethod
     def format_colours_for_file(self, colours):
@@ -94,22 +94,22 @@ class config_writer(application_wrapper):
 
 ## </BASE>
 
-class feh_wallpaper(background_manager):
+class Fehwallpaper(Backgroundmanager):
     """
     Update the background using the feh tool. 
     """
     def __init__(self):
-        super(feh_wallpaper, self).__init__("FEH")
+        super(Fehwallpaper, self).__init__("FEH")
 
     def change_background(self, path):
         execute(["feh", "--bg-fill", path])
 
-class gnome_wallpaper(background_manager):
+class Gnomewallpaper(Backgroundmanager):
     """
     Update the background using the gnome desktop background settings. 
     """
     def __init__(self):
-        super(gnome_wallpaper, self).__init__("Gnome Wallpaper Changer")
+        super(Gnomewallpaper, self).__init__("Gnome Wallpaper Changer")
 
     def change_background(self, path):
         execute(["gsettings", "set", "org.gnome.desktop.background", 
@@ -123,12 +123,12 @@ class gnome_wallpaper(background_manager):
 
 ## <WM>
 
-class window_manager(config_writer):
+class Windowmanager(Configwriter):
     """
     Update the colours for the standard Window Manager for the system.
     """
     def __init__(self, name):
-        super(window_manager, self).__init__(name)
+        super(Windowmanager, self).__init__(name)
 
     # 
     # 
@@ -143,12 +143,12 @@ class window_manager(config_writer):
         """
         pass
 
-class i3wm(window_manager):
+class I3wm(Windowmanager):
     """
     Update the I3WM colours. 
     """
     def __init__(self):
-        super(i3wm, self).__init__("I3 Window Manager")
+        super(I3wm, self).__init__("I3 Window Manager")
         error("NOTE: I3WM has not been implemented yet. ")
 
     def format_colours_for_file(self, colours):
@@ -171,18 +171,18 @@ class i3wm(window_manager):
 ## <Shells>
 
 
-class shell_colours(config_writer):
+class Shellcolours(Configwriter):
     """
     The colours for ????
     TODO: where is this actually used?  
     """
     def __init__(self):
-        super(shell_colours, self).__init__("Shell Colours")
+        super(Shellcolours, self).__init__("Shell Colours")
 
     def format_colours_for_file(self, colours):
         shcols = ""
-        for idx, c in enumerate(colours):
-            shcols += """export COLOR{}="{}"\n""".format(idx, c)
+        for idx, colour in enumerate(colours):
+            shcols += """export COLOR{}="{}"\n""".format(idx, colour)
         return shcols
 
     def get_path(self, base_path):
@@ -194,13 +194,12 @@ class shell_colours(config_writer):
     def on_background_change(self, base_path):
         pass
 
-
-class gnome_shell_colours(config_writer):
+class Gnomeshellcolours(Configwriter):
     """
     The colours that are used with gnome-shell in i.e. Ubuntu. 
     """
     def __init__(self):
-        super(gnome_shell_colours, self).__init__("Shell Colours (Gnome)")
+        super(Gnomeshellcolours, self).__init__("Shell Colours (Gnome)")
 
     def format_colours_for_file(self, colours):
         return ":".join(colours)
@@ -213,8 +212,8 @@ class gnome_shell_colours(config_writer):
         return "GSH"
 
     def on_background_change(self, base_path):
-        with open(self.get_path(base_path)) as f:
-            colours = f.read()
+        with open(self.get_path(base_path)) as config_file:
+            colours = config_file.read()
 
         execute(["gconftool-2", "--set", 
             "/apps/gnome-terminal/profiles/Default/palette", "--type", 
@@ -225,6 +224,6 @@ class gnome_shell_colours(config_writer):
 
 
 
-WM    = [i3wm()]
-BG    = [feh_wallpaper(), gnome_wallpaper()]
-SHELL = [shell_colours(), gnome_shell_colours()]
+WM    = [I3wm()]
+BG    = [Fehwallpaper(), Gnomewallpaper()]
+SHELL = [Shellcolours(), Gnomeshellcolours()]

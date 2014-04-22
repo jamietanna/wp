@@ -17,7 +17,8 @@ WM_CONFIG_KEY = "window_manager"
 BG_CONFIG_KEY = "background_manager"
 SH_CONFIG_KEY = "shell"
 
-class User_Config:
+class Userconfig:
+	# pylint: disable=W0232, R0903
     """
     Static class to store user's data
     """

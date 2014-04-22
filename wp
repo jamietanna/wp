@@ -65,20 +65,20 @@ def populate_from_array(settings_array, config_file,
 def populate_settings():
     """
     Populate the settings from the config file, exiting if any errors occur. 
-     We store all settings in a global point of access - config.User_Config. 
+     We store all settings in a global point of access - config.Userconfig. 
     """
     config_file = ConfigParser.ConfigParser()
     config_file.read(config.WP_CONFIG_FILE)
 
-    config.User_Config.WM    = populate_from_array(applicationwrappers.WM,   
+    config.Userconfig.WM    = populate_from_array(applicationwrappers.WM,   
                                             config_file, 
                                             config.WM_CONFIG_KEY, 
                                             "window manager")
-    config.User_Config.BG    = populate_from_array(applicationwrappers.BG,   
+    config.Userconfig.BG    = populate_from_array(applicationwrappers.BG,   
                                             config_file, 
                                             config.BG_CONFIG_KEY, 
                                             "background manager")
-    config.User_Config.SHELL = populate_from_array(applicationwrappers.SHELL,
+    config.Userconfig.SHELL = populate_from_array(applicationwrappers.SHELL,
                                             config_file, 
                                             config.SH_CONFIG_KEY, 
                                             "shell")
@@ -86,9 +86,9 @@ def populate_settings():
     # if any of our variables are None, we've hit a non-existent value,
     #  therefore exit. 
     if any(x == None for x in 
-                        [config.User_Config.WM,
-                         config.User_Config.BG, 
-                         config.User_Config.SHELL]):
+                        [config.Userconfig.WM,
+                         config.Userconfig.BG, 
+                         config.Userconfig.SHELL]):
         sys.exit(1)
 
 
@@ -149,7 +149,7 @@ def addAFile(old_path):
     colours = colour.get_colours(path)
 
     # TODO WM.write_colours_to_file()
-    config.User_Config.SHELL.write_colours_to_file(colours, 
+    config.Userconfig.SHELL.write_colours_to_file(colours, 
         os.path.basename(old_path))
 
 def add(files):
@@ -172,14 +172,14 @@ def change():
 
     joined = os.path.join(config.WP_DIRECTORY, newBG)
 
-    config.User_Config.BG.change_background(joined)
+    config.Userconfig.BG.change_background(joined)
 
-    __path = config.User_Config.SHELL.get_path(joined)
+    __path = config.Userconfig.SHELL.get_path(joined)
     if not os.path.exists(__path):
         output("Note: No metadata found, generating now")
         addAFile(os.path.join(config.WP_DIRECTORY, newBG))
 
-    config.User_Config.SHELL.on_background_change(joined)
+    config.Userconfig.SHELL.on_background_change(joined)
     output("Changed background to " + newBG)
 
 def handle_cmd(cmd):
