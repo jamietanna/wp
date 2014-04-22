@@ -182,59 +182,62 @@ def change():
     config.Userconfig.SHELL.on_background_change(joined)
     output("Changed background to " + newBG)
 
+def display_help():
+    output("Possible WMs:")
+    for wm in applicationwrappers.WM:
+        output("  {}".format(wm.get_short_name()))
+    
+    output("Possible BGs:")
+    for bg in applicationwrappers.BG:
+        output("  {}".format(bg.get_short_name()))
+    
+    output("Possible SHs:")
+    for sh in applicationwrappers.SHELL:
+        output("  {}".format(sh.get_short_name()))
+        
 def handle_cmd(cmd):
-    if cmd == "add":
-        # TODO check if all images
-        files = []
-        for idx, f in enumerate(sys.argv):
-            if idx > 1:
-                files.append(f)
-        add(files)
-    elif cmd == "change":
-        change()
-    elif cmd == "refresh":
-        images = images_from_directory(config.WP_DIRECTORY)
-        output("Refreshing {} files, this could take some time. "
-                .format(len(images)))
-        add(images)
-    elif cmd == "help":
-        output("Possible WMs:")
-        for wm in applicationwrappers.WM:
-            output("  {}".format(wm.get_short_name()))
-        output("Possible BGs:")
-        for bg in applicationwrappers.BG:
-            output("  {}".format(bg.get_short_name()))
-        output("Possible SHs:")
-        for sh in applicationwrappers.SHELL:
-            output("  {}".format(sh.get_short_name()))
+    if cmd == "setup":
+        setup()
+    else:
+        if os.path.isdir(config.WP_DIRECTORY):
+            if not os.path.exists(config.WP_CONFIG_FILE):
+                setup()
+        else:
+            os.makedirs(config.WP_DIRECTORY)
+            setup()
+        # do rest of 'switch' statement
 
+        populate_settings()
+        
+        if cmd == "add":
+            # TODO check if all images
+            files = sys.argv[2:]
+            if len(files) > 0:
+                add(files)
+            else:
+                error("Please enter some files to add")
+        elif cmd == "change":
+            change()
+        elif cmd == "refresh":
+            images = images_from_directory(config.WP_DIRECTORY)
+            output("Refreshing {} files, this could take some time. "
+                    .format(len(images)))
+            add(images)
+        elif cmd == "help":
+            display_help()
+        else:
+            error("Invalid command. ")
+            usage()
 
 def main():
-
+    # if we ever get an interrupt, call our own handler
     signal.signal(signal.SIGINT, sigint_handler)
 
     debug('Number of arguments: {} arguments.'.format(str(len(sys.argv))))
     debug('Argument List: {}'.format(str(sys.argv)))
 
     if len(sys.argv) > 1:
-        
-        cmd = sys.argv[1].lower()
-        if cmd == "setup":
-            setup()
-        else:
-            if os.path.isdir(config.WP_DIRECTORY):
-                if not os.path.exists(config.WP_CONFIG_FILE):
-                    setup()
-            else:
-                os.makedirs(config.WP_DIRECTORY)
-                setup()
-            # do rest of 'switch' statement
-
-            populate_settings()
-
-            handle_cmd(cmd)
-            
-            
+        handle_cmd(sys.argv[1].lower())
     else:
         usage()
 
