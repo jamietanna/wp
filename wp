@@ -20,9 +20,7 @@ import random
 from generic import output, error, debug, enumerate_choices, in_list_upper
 import applicationwrappers
 
-
-
-def sigint_handler( _ ):
+def sigint_handler( signal_int, frame ): # pylint: disable=W0613
     """
     Instead of having to CTRL-C a number of times when wanting to exit a script,
      globally handle a SIGINT by calling sigint_handler, which displays a 
@@ -143,6 +141,10 @@ def usage():
 def addAFile(old_path):
     path      = config.WP_DIRECTORY + "/" + os.path.basename(old_path)
 
+    if os.path.isdir(old_path):
+        error("Cannot add from directories (yet)")
+        return
+
     if not os.path.exists(path):
         shutil.copy(old_path, path)
 
@@ -174,8 +176,8 @@ def change():
 
     config.Userconfig.BG.change_background(joined)
 
-    __path = config.Userconfig.SHELL.get_path(joined)
-    if not os.path.exists(__path):
+    shpath = config.Userconfig.SHELL.get_path(joined)
+    if not os.path.exists(shpath):
         output("Note: No metadata found, generating now")
         addAFile(os.path.join(config.WP_DIRECTORY, newBG))
 
@@ -183,58 +185,64 @@ def change():
     output("Changed background to " + newBG)
 
 def handle_cmd(cmd):
-    if cmd == "add":
-        # TODO check if all images
-        files = []
-        for idx, f in enumerate(sys.argv):
-            if idx > 1:
-                files.append(f)
-        add(files)
-    elif cmd == "change":
-        change()
-    elif cmd == "refresh":
-        images = images_from_directory(config.WP_DIRECTORY)
-        output("Refreshing {} files, this could take some time. "
-                .format(len(images)))
-        add(images)
-    elif cmd == "help":
-        output("Possible WMs:")
-        for wm in applicationwrappers.WM:
-            output("  {}".format(wm.get_short_name()))
-        output("Possible BGs:")
-        for bg in applicationwrappers.BG:
-            output("  {}".format(bg.get_short_name()))
-        output("Possible SHs:")
-        for sh in applicationwrappers.SHELL:
-            output("  {}".format(sh.get_short_name()))
+    if cmd == "setup":
+        setup()
+    else:
+        if os.path.isdir(config.WP_DIRECTORY):
+            if not os.path.exists(config.WP_CONFIG_FILE):
+                setup()
+        else:
+            os.makedirs(config.WP_DIRECTORY)
+            setup()
+        # do rest of 'switch' statement
+
+        populate_settings()
+
+        handle_cmd(cmd)
+        if cmd == "add":
+            # TODO check if all images
+            # ignore the script name and the command
+            files = sys.argv[2:]
+
+            if len(files) > 0:
+                add(files)
+            else:
+                error("Please choose some files to add.")
+
+        elif cmd == "change":
+            change()
+        elif cmd == "refresh":
+            images = images_from_directory(config.WP_DIRECTORY)
+            output("Refreshing {} files, this could take some time. "
+                    .format(len(images)))
+            add(images)
+        elif cmd == "help":
+            display_help()
+
+def display_help():
+    # pylint: disable=C0103
+    output("Possible WMs:")
+    for wm in applicationwrappers.WM:
+        output("  {}".format(wm.get_short_name()))
+    output("Possible BGs:")
+    for bg in applicationwrappers.BG:
+        output("  {}".format(bg.get_short_name()))
+    output("Possible SHs:")
+    for sh in applicationwrappers.SHELL:
+        output("  {}".format(sh.get_short_name()))
 
 
 def main():
-
+    """
+    Run the wp tool, handling arguments 
+    """
     signal.signal(signal.SIGINT, sigint_handler)
 
     debug('Number of arguments: {} arguments.'.format(str(len(sys.argv))))
     debug('Argument List: {}'.format(str(sys.argv)))
 
     if len(sys.argv) > 1:
-        
-        cmd = sys.argv[1].lower()
-        if cmd == "setup":
-            setup()
-        else:
-            if os.path.isdir(config.WP_DIRECTORY):
-                if not os.path.exists(config.WP_CONFIG_FILE):
-                    setup()
-            else:
-                os.makedirs(config.WP_DIRECTORY)
-                setup()
-            # do rest of 'switch' statement
-
-            populate_settings()
-
-            handle_cmd(cmd)
-            
-            
+        handle_cmd(sys.argv[1].lower())
     else:
         usage()
 
