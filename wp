@@ -90,36 +90,40 @@ def populate_settings():
 
 
 def setup():
-    _BGs    = [bg.get_short_name()    for bg in applicationwrappers.BG]
-    _SHs    = [s.get_short_name()     for s  in applicationwrappers.SHELL]
-    _WMs    = [wm.get_short_name()    for wm in applicationwrappers.WM]
+    poss_bgs    = [bg.get_short_name()    for bg in applicationwrappers.BG]
+    poss_shs    = [s.get_short_name()     for s  in applicationwrappers.SHELL]
+    poss_wms    = [wm.get_short_name()    for wm in applicationwrappers.WM]
 
     if len(sys.argv) == 5:
-        WM = in_list_upper(sys.argv[2], _WMs, "Invalid Window Manager")
-        BG = in_list_upper(sys.argv[3], _BGs, "Invalid Background Manager")
-        SH = in_list_upper(sys.argv[4], _SHs, "Invalid Shell")
+        new_wm = in_list_upper(sys.argv[2], poss_wms, "Invalid Window Manager")
+        new_bg = in_list_upper(sys.argv[3], poss_bgs, "Invalid Background Manager")
+        new_sh = in_list_upper(sys.argv[4], poss_shs, "Invalid Shell")
 
     else:
-        WMi = enumerate_choices(_WMs)
-        WM  = applicationwrappers.WM[int(WMi)].get_short_name()
+        wm_int = int(enumerate_choices(poss_wms))
+        new_wm  = applicationwrappers.WM[wm_int].get_short_name()
 
-        BGi = enumerate_choices(_BGs)
-        BG  = applicationwrappers.BG[int(BGi)].get_short_name()
+        bg_int = int(enumerate_choices(poss_bgs))
+        new_bg  = applicationwrappers.BG[bg_int].get_short_name()
 
-        SHi = enumerate_choices(_SHs)
-        SH  = applicationwrappers.SHELL[int(SHi)].get_short_name()
+        sh_int = int(enumerate_choices(poss_shs))
+        new_sh  = applicationwrappers.SHELL[sh_int].get_short_name()
 
-    if not any(x == None for x in [WM, BG, SH]):
+    if not any(new_val == None for new_val in [new_wm, new_bg, new_sh]):
         with open(config.WP_CONFIG_FILE, 'w') as config_file_:
             config_file = ConfigParser.RawConfigParser()
             config_file.add_section(config.WP_CONFIG_SECTION)
 
-            config_file.set(config.WP_CONFIG_SECTION, config.WM_CONFIG_KEY, WM)
-            config_file.set(config.WP_CONFIG_SECTION, config.BG_CONFIG_KEY, BG)
-            config_file.set(config.WP_CONFIG_SECTION, config.SH_CONFIG_KEY, SH)
+            config_file.set(config.WP_CONFIG_SECTION, 
+                            config.WM_CONFIG_KEY, new_wm)
+            config_file.set(config.WP_CONFIG_SECTION, 
+                            config.BG_CONFIG_KEY, new_bg)
+            config_file.set(config.WP_CONFIG_SECTION, 
+                            config.SH_CONFIG_KEY, new_sh)
             
             config_file.write(config_file_)
-            output("New setup: {} {} {}".format(WM, BG, SH))
+            output("New setup: {} {} {}".format(new_wm, new_bg, new_sh))
+
 
 def usage():
     output("Usage: {0}".format(sys.argv[0]))
