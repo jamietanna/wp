@@ -145,7 +145,7 @@ def usage():
     output("            help                        List all possible arguments to setup")
 
 # TODO don't bother adding files if they already exist
-def addAFile(old_path):
+def add_file(old_path):
     """
     Add a file to the config folder, and write all the config files. 
     """
@@ -183,7 +183,7 @@ def change():
     __path = config.Userconfig.SHELL.get_path(joined)
     if not os.path.exists(__path):
         output("Note: No metadata found, generating now")
-        addAFile(os.path.join(config.WP_DIRECTORY, newBG))
+        add_file(os.path.join(config.WP_DIRECTORY, newBG))
 
     config.Userconfig.SHELL.on_background_change(joined)
     output("Changed background to " + newBG)
@@ -201,6 +201,14 @@ def display_help():
     for sh in applicationwrappers.SHELL:
         output("  {}".format(sh.get_short_name()))
 
+def add(images):
+    # TODO check if all images
+    if len(images) > 0:
+        for arg in images:
+            add_file(arg)
+    else:
+        error("Please enter some files to add")
+
 def handle_cmd(cmd):
     if cmd == "setup":
         setup()
@@ -216,13 +224,7 @@ def handle_cmd(cmd):
         populate_settings()
         
         if cmd == "add":
-            # TODO check if all images
-            if len(sys.argv) > 2:
-                for arg in sys.argv[2:]:
-                    addAFile(arg)
-
-            else:
-                error("Please enter some files to add")
+            add(sys.argv[2:])
         elif cmd == "change":
             change()
         elif cmd == "refresh":
