@@ -8,11 +8,10 @@ import shutil
 
 import colour
 import config
-import subprocess
 
 import random
 
-from generic import *
+from generic import output, error, debug, enumerate_choices
 import applicationwrappers
 
 class user_config:
@@ -24,7 +23,7 @@ class user_config:
 
 
 # SO 1112343
-def signal_handler(signal, frame):
+def sigint_handler():
     print
     error("User cancelled operation(s). ")
     error("Now exiting. ")
@@ -44,11 +43,10 @@ def populate_from_array(settings_array, config_file,
             if config_file_value == val.get_short_name():
                 return val
         # if we reach this far, it's not valid!
-        raise Exception
+        raise Exception()
     except:
         error("No valid " + error_str + " in config, please run setup again. ")
         return None
-
 
 def populate_settings():
     config_file = ConfigParser.ConfigParser()
@@ -71,7 +69,7 @@ def populate_settings():
     #  therefore exit. 
     if any(x == None for x in 
                         [user_config.WM, user_config.BG, user_config.SHELL]):
-       sys.exit(1)
+        sys.exit(1)
 
 
 def in_list(to_check, the_list, error_str):
@@ -82,8 +80,6 @@ def in_list(to_check, the_list, error_str):
         return None
 
 def setup():
-    any_errors = False
-
     _BGs    = [bg.get_short_name()    for bg in applicationwrappers.BG]
     _SHs    = [s.get_short_name()     for s  in applicationwrappers.SHELL]
     _WMs    = [wm.get_short_name()    for wm in applicationwrappers.WM]
@@ -113,7 +109,7 @@ def setup():
             config_file.set(config.WP_CONFIG_SECTION, config.SH_CONFIG_KEY, SH)
             
             config_file.write(config_file_)
-            output("New setup: {} {} {}".format(WM,BG,SH))
+            output("New setup: {} {} {}".format(WM, BG, SH))
 
 def usage():
     output("Usage: {0}".format(sys.argv[0]))
@@ -130,18 +126,7 @@ def addAFile(old_path):
 
     colours = colour.get_colours(path)
 
-    temp   = ""
-    shcols = ""
-
-    for idx, c in enumerate(colours):
-        if user_config.WM == "I3":
-            pass
-        elif user_config.WM == "X":
-            temp += """*color{}: {}\n""".format(idx, c)
-        elif user_config.WM == "OTHER":
-            pass
-        shcols += """export COLOR{}="{}"\n""".format(idx, c)
-    
+    # TODO WM.write_colours_to_file()
     user_config.SHELL.write_colours_to_file(colours, os.path.basename(old_path))
 
 def add(files):
@@ -174,9 +159,36 @@ def change():
     user_config.SHELL.on_background_change(joined)
     output("Changed background to " + newBG)
 
+def handle_cmd(cmd):
+    if cmd == "add":
+        # TODO check if all images
+        files = []
+        for idx, f in enumerate(sys.argv):
+            if idx > 1:
+                files.append(f)
+        add(files)
+    elif cmd == "change":
+        change()
+    elif cmd == "refresh":
+        images = images_from_directory(config.WP_DIRECTORY)
+        output("Refreshing {} files, this could take some time. "
+                .format(len(images)))
+        add(images)
+    elif cmd == "help":
+        output("Possible WMs:")
+        for wm in applicationwrappers.WM:
+            output("  {}".format(wm.get_short_name()))
+        output("Possible BGs:")
+        for bg in applicationwrappers.BG:
+            output("  {}".format(bg.get_short_name()))
+        output("Possible SHs:")
+        for sh in applicationwrappers.SHELL:
+            output("  {}".format(sh.get_short_name()))
+
+
 def main():
 
-    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGINT, sigint_handler)
 
     debug('Number of arguments: {} arguments.'.format(str(len(sys.argv))))
     debug('Argument List: {}'.format(str(sys.argv)))
@@ -197,35 +209,8 @@ def main():
 
             populate_settings()
 
-            if cmd == "add":
-                # TODO check if all images
-                files = []
-                for idx, f in enumerate(sys.argv):
-                    if idx > 1:
-                        files.append(f)
-                add(files)
-            elif cmd == "change":
-                change()
-            elif cmd == "refresh":
-                images = images_from_directory(config.WP_DIRECTORY)
-                output("Refreshing {} files, this could take some time. "
-                        .format(len(images)))
-                add(images)
-            elif cmd == "help":
-                output("Possible WMs:")
-                for wm in applicationwrappers.WM:
-                    output("  {}".format(wm.get_short_name()))
-                output("Possible BGs:")
-                for bg in applicationwrappers.BG:
-                    output("  {}".format(bg.get_short_name()))
-                output("Possible SHs:")
-                for sh in applicationwrappers.SHELL:
-                    output("  {}".format(sh.get_short_name()))
-
-
-
-            else:
-                return
+            handle_cmd(cmd)
+            
             
     else:
         usage()
